@@ -6,8 +6,9 @@
 ALL SKU 목록과 표기가 거의 그대로 같다), 수량, 공급가액, 주문번호(중복 방지 키),
 장부명("...로켓배송..." 이 붙어 있으면 그 주문은 로켓배송으로 나간 것).
 
-여러 번 겹쳐서 올려도 안전하도록 주문번호로 중복 제거해 data/ecom_txn.json 에 누적 저장하고,
-월별/일별 집계는 매번 그 누적분에서 다시 계산한다 (재고표 일별 스냅샷과 같은 방식).
+여러 번 겹쳐서 올려도 안전하도록 주문번호로 중복 제거해 data/ecom_txn.json 에 누적 저장한다.
+같은 주문번호가 다시 들어왔는데 날짜/상품/수량/금액이 바뀐 경우에는 ERP의 최신 값을
+정정본으로 보고 기존 행을 갱신한다. 월이 바뀐 정정이면 이전 월과 새 월을 모두 재집계한다.
 """
 import json
 import hashlib
@@ -120,8 +121,24 @@ def save_txn(store):
     TXN_PATH.write_text(json.dumps(store, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
+def _txn_key(row):
+    """ERP 주문번호가 있으면 그것을, 없으면 안정적인 fallback 키를 사용한다."""
+    return row.get("order_no") or ("noord:%s:%s:%s:%s" % (
+        row.get("plat"), row.get("date"), row.get("name"), row.get("qty")
+    ))
+
+
+def _materially_changed(old, new):
+    """재집계가 필요한 실제 거래 정정인지 확인한다. rocket 플래그만 바뀐 것은 제외."""
+    return any(old.get(k) != new.get(k) for k in ("date", "plat", "name", "qty", "supply"))
+
+
 def ingest(files):
-    """files: [(filename, raw_bytes), ...]. 주문번호로 중복 제거해 누적 저장."""
+    """files: [(filename, raw_bytes), ...].
+
+    주문번호 기준으로 중복 제거하되, 같은 주문번호의 날짜/상품/수량/금액이 달라졌으면
+    단순 중복으로 버리지 않고 최신 ERP 행으로 교체한다.
+    """
     store = load_txn()
     added, skipped_no_plat, skipped_dup = 0, 0, 0
     for filename, raw in files:
@@ -129,12 +146,17 @@ def ingest(files):
             if not row["plat"]:
                 skipped_no_plat += 1
                 continue
-            key = row["order_no"] or ("noord:%s:%s:%s:%s" % (row["plat"], row["date"], row["name"], row["qty"]))
-            if key in store:
-                skipped_dup += 1
-                # 같은 주문이 로켓배송으로 재확인되면 갱신
-                if row["rocket"] and not store[key].get("rocket"):
-                    store[key]["rocket"] = True
+            key = _txn_key(row)
+            old = store.get(key)
+            if old is not None:
+                if _materially_changed(old, row):
+                    merged = dict(row)
+                    merged["rocket"] = bool(old.get("rocket") or row.get("rocket"))
+                    store[key] = merged
+                else:
+                    skipped_dup += 1
+                    if row["rocket"] and not old.get("rocket"):
+                        store[key]["rocket"] = True
                 continue
             store[key] = row
             added += 1
@@ -159,10 +181,6 @@ def all_skus():
     return {p: v.get("skus", []) for p, v in data.items()}
 
 
-# 거래내역 원본 상품명이 등록된 SKU 이름과 살짝 달라(세트 표기, 문구 추가 등)
-# 자동 매칭이 안 되는 경우를 강제로 묶어주는 별칭표.
-# {플랫폼: {거래내역 원본명: 등록된 SKU 이름}}
-# 2026-09 컬리 8월 출고 528개 누락(9,762 vs 실제 10,290) 조사 중 발견 — CLAUDE.md 참고.
 ALIASES = {
     "컬리": {
         "베르데 에스메랄다 프리미엄올리브유500ml(그린,피쿠알)1P(세트)":
@@ -178,17 +196,31 @@ _ALIAS_NORM = {p: {_norm(k): v for k, v in m.items()} for p, m in ALIASES.items(
 
 def plan(files):
     """files: [(filename, raw_bytes), ...] -> 미리보기 계획."""
+    before = load_txn()
+    uploaded_rows = [row for _, raw in files for row in parse_bytes(raw)]
+    touched = set()
+    updated_keys = set()
+
+    for row in uploaded_rows:
+        if not row.get("plat"):
+            continue
+        touched.add((row["plat"], row["date"][:7]))
+        key = _txn_key(row)
+        old = before.get(key)
+        if old is None:
+            continue
+        old_plat = old.get("plat")
+        old_date = str(old.get("date") or "")
+        if old_plat and len(old_date) >= 7:
+            touched.add((old_plat, old_date[:7]))
+        if _materially_changed(old, row):
+            updated_keys.add(key)
+
     store, added, skipped_dup = ingest(files)
     skus = all_skus()
     norm_map = {p: {_norm(s): s for s in lst} for p, lst in skus.items()}
 
-    touched = set()  # (plat, ym)
-    for row in [parse_row for f in files for parse_row in parse_bytes(f[1])]:
-        if not row["plat"]:
-            continue
-        touched.add((row["plat"], row["date"][:7]))
-
-    by_group = {}  # (plat, sku_key, ym) -> {qty, supply, rocket, matched_name, raw_names:set}
+    by_group = {}
     for row in store.values():
         plat = row.get("plat")
         if not plat or (plat, row["date"][:7]) not in touched:
@@ -221,7 +253,6 @@ def plan(files):
             item["원본명"] = sorted(g["raw"])
             unmatched.append(item)
 
-    # 미리보기용 일별 합계 (플랫폼 무관 합산 — 화면에서 플랫폼별로 다시 나눔)
     daily = {}
     for row in store.values():
         plat = row.get("plat")
@@ -237,6 +268,7 @@ def plan(files):
             for name, raw in files
         ],
         "새로_담김": added,
+        "수정_반영": len(updated_keys),
         "이미_있던_라인": skipped_dup,
         "대상월": sorted({ym for _, ym in touched}),
         "changes": changes,
@@ -260,11 +292,6 @@ def month_totals(ym):
 
 
 def daily_trend(plat, days=60):
-    """플랫폼 하나의 날짜별 출고 추이 + 그날 무엇이 나갔는지.
-
-    [{date, qty, supply, items:[{name, qty, supply}, ...]}, ...]  (최근 days 일)
-    items 는 많이 나간 순. 그래프에 커서를 올렸을 때 그날 구성을 보여주는 데 쓴다.
-    """
     store = load_txn()
     by_date = {}
     for row in store.values():
@@ -288,7 +315,6 @@ def daily_trend(plat, days=60):
 
 
 def sku_daily_series(plat, sku):
-    """특정 SKU의 날짜별 수량/공급가액 (전체 누적분에서)."""
     store = load_txn()
     nm = _norm(sku)
     out = {}
