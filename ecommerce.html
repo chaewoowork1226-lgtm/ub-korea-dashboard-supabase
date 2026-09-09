@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쿠팡 · 컬리 월별 판매실적 관리</title>
+<style>
+:root{--c:#2563eb;--bg:#f5f6f8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;
+ margin:0;padding:16px;background:var(--bg);color:#1a1a1a;-webkit-text-size-adjust:100%;transition:background .2s}
+h1{font-size:20px;margin:0 0 4px;color:var(--c)}
+.sub{color:#666;font-size:12.5px;margin-bottom:12px;line-height:1.5}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{padding:11px 26px;font-size:15px;font-weight:700;border-radius:9px 9px 0 0;background:#e7e9ed;color:#8a929c}
+.tabs button.on{background:#fff;color:var(--c);box-shadow:0 -2px 6px rgba(0,0,0,.06)}
+.tabs .cnt{font-size:11px;font-weight:600;opacity:.7;margin-left:6px}
+/* 브랜드 탭 */
+.btabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.btabs button{padding:6px 15px;font-size:12.5px;font-weight:600;border-radius:999px;
+  background:#eef1f5;color:#6b7280;border:1px solid transparent}
+.btabs button.on{background:var(--c);color:#fff;border-color:var(--c)}
+.btabs .bc{font-size:10.5px;opacity:.75;margin-left:5px}
+/* 광고비 입력 패널 */
+.adcard{background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.adcard h4{margin:0 0 3px;font-size:14px}
+.adcard .sub2{font-size:11.5px;color:#8a929c;margin-bottom:9px}
+.adtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.adtbl th,.adtbl td{border:1px solid #e6e9ee;padding:6px 8px;text-align:right;white-space:nowrap}
+.adtbl th{background:#f4f6f8;font-weight:700;color:#4b5563;text-align:center}
+.adtbl td.mk{text-align:center;font-weight:700;color:#374151}
+.adtbl input{width:104px;text-align:right;padding:4px 7px;font-size:12.5px;
+  border:1px solid #d7dbe0;border-radius:6px}
+.adtbl input:focus{outline:2px solid var(--c);outline-offset:1px}
+.adtbl .pu{font-weight:700;color:var(--c)}
+.adtbl tr.zero td{color:#b8bec6}
+/* 광고비 연도 탭 */
+.adyears{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.adyears button{padding:5px 14px;font-size:12.5px;font-weight:700;border-radius:7px;
+  background:#eef1f5;color:#6b7280;border:1px solid transparent}
+.adyears button.on{background:var(--c);color:#fff;border-color:var(--c)}
+.adyears .ac{font-size:10px;font-weight:600;opacity:.8;margin-left:6px}
+/* 광고비 추이 그래프 */
+.adchart{margin-top:12px;border-top:1px dashed #e3e6ea;padding-top:10px}
+.adchart .acap{font-size:12px;font-weight:700;color:#4b5563;margin-bottom:6px}
+.adchart svg{display:block}
+.adempty{margin-top:12px;border-top:1px dashed #e3e6ea;padding-top:10px;
+  font-size:11.5px;color:#a3aab3}
+/* 원가조정 확인 */
+.adjok{background:var(--c);color:#fff;padding:5px 12px;font-size:12px;margin-left:8px}
+.adjstate{font-size:11px;margin-left:7px;font-weight:600}
+.adjstate.warn{color:#c2410c}
+.adjstate.ok{color:#1f6b3a}
+/* 구글시트 연결 상태 */
+.syncstate{font-size:11.5px;font-weight:600;color:#8a929c;padding:4px 10px;border-radius:6px;
+  background:#f2f4f7;white-space:nowrap}
+.syncstate.ok{color:#1f6b3a;background:#e8f5ee}
+.syncstate.warn{color:#c2410c;background:#fdf0e7}
+/* 숨긴 SKU 목록 */
+.hidhead{font-size:12.5px;color:#555;margin-bottom:6px}
+.hidhead button{background:#eef0f3;color:#444;padding:4px 11px;font-size:11.5px;margin-left:8px}
+.hidlist{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.hitem{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid #e3e6ea;
+  border-radius:999px;padding:4px 6px 4px 12px;font-size:11.5px;color:#555;max-width:100%}
+.hitem .un{background:var(--c);color:#fff;padding:3px 10px;font-size:11px;border-radius:999px}
+.delbtn.hard{background:#fdecec;color:#c0392b}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:12px;
+ background:#fff;border-radius:0 10px 10px 10px;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:30}
+input,select{padding:8px 10px;border:1px solid #d5d8dd;border-radius:6px;font-size:14px;font-family:inherit;background:#fff}
+#q{flex:1;min-width:120px}
+button{padding:8px 12px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.primary{background:var(--c);color:#fff;padding:10px 16px;font-size:14px}
+.ghost{background:#eef0f3;color:#444}
+.stat{font-size:12px;color:#555;width:100%;line-height:1.6}
+.metrics{display:flex;gap:4px;flex-wrap:wrap}
+.metrics button{background:#eef0f3;color:#555;padding:7px 11px;font-size:12.5px}
+.metrics button.on{background:var(--c);color:#fff}
+.tmet{display:flex;gap:4px;margin-bottom:7px}
+.tmet button{background:#eef0f3;color:#666;padding:6px 14px;font-size:12.5px}
+.tmet button.on{background:var(--c);color:#fff}
+.adj{font-size:12px;color:#555;background:#f4f6f8;padding:6px 10px;border-radius:6px;white-space:nowrap}
+.adj input{width:58px;padding:5px 6px;font-size:12.5px;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(660px,1fr));gap:14px}
+/* SKU 카드는 접힌 채로 시작한다 — 60개 그래프가 한꺼번에 펼쳐지면 못 본다 */
+.card.collapsed{grid-column:auto}
+.card.collapsed .cbody{display:none}
+.card.collapsed .meta{margin-bottom:0}
+.card .tt{cursor:pointer}
+.cchev{display:inline-block;width:14px;color:#9aa2ad;font-size:11px}
+.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card.full{grid-column:1/-1}
+.tt{font-size:14px;font-weight:700;margin-bottom:3px;line-height:1.35;word-break:keep-all}
+.meta{font-size:12px;color:#777;margin-bottom:8px}
+.row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.chartbox{flex:1 1 360px;min-width:0}
+.chartbox svg{width:100%;height:auto;display:block;cursor:pointer}
+.panel{flex:0 0 236px;border-left:1px solid #eceef1;padding-left:14px}
+@media(max-width:960px){.panel{flex:1 1 100%;border-left:none;border-top:1px solid #eceef1;padding-left:0;padding-top:12px}}
+.panel h4{margin:0 0 8px;font-size:12px;color:#1f6b3a;font-weight:800}
+.fld{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.fld label{width:66px;font-size:11.5px;color:#777;flex:0 0 66px}
+.fld input,.fld select{width:100%;padding:7px 8px;font-size:13.5px;text-align:right}
+.fld select{text-align:left}
+.hintq{font-size:11px;color:#777;margin:-2px 0 7px 66px;line-height:1.4}
+.hintq b{color:#1f6b3a}
+.btns{display:flex;gap:6px;margin-top:6px}
+.btns button{flex:1;padding:9px 0}
+.add{background:#1f6b3a;color:#fff}
+.add:disabled{background:#eceef1;color:#aab;cursor:default}
+.fix{background:#f4b400;color:#3d2f00}
+.fix:disabled{background:#f7f8f9;color:#c3c8cf;cursor:default}
+.fld input:disabled{background:#f0f8f3;color:#1f6b3a;font-weight:700;border-color:#bcdcc9;-webkit-text-fill-color:#1f6b3a;opacity:1}
+.lock{display:block;margin-top:7px;font-size:11px;color:#1f6b3a;background:#f0f8f3;padding:5px 7px;border-radius:5px;line-height:1.45}
+.logs{margin-top:10px;border-top:1px dashed #e3e6ea;padding-top:8px}
+.logs .t{font-size:11px;color:#999;margin-bottom:5px}
+.lg1{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:5px 7px;border-radius:5px;background:#f0f8f3;margin-bottom:4px}
+.lg1 b{color:#1f6b3a}.lg1 .sp{flex:1;color:#666}
+.lg1 button{padding:3px 7px;font-size:10.5px;border-radius:4px}
+.mini{background:#dcece2;color:#1f6b3a}.del{background:#f6e3e3;color:#a33}
+.det{margin-top:8px;padding:9px 11px;background:#f8f9fb;border:1px solid #e6e9ed;border-radius:7px;font-size:12px;line-height:1.75;display:none}
+.det.on{display:block}
+.det b{color:var(--c)}
+.det .k{display:inline-block;width:74px;color:#888}
+.det .cl{float:right;cursor:pointer;color:#aab;font-weight:700}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;vertical-align:middle}
+.bnew{background:#f0f8f3;color:#1f6b3a}.bno{background:#f6f0f0;color:#a55}
+.rocket{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px 2px 6px;
+  border-radius:10px;vertical-align:middle;background:#f2f3f5;color:#9aa2ad;cursor:pointer;user-select:none}
+.rocket input{margin:0}
+.rocket.on{background:#fff1e0;color:#c9720a}
+.lg{font-size:11px;color:#888;margin-bottom:5px}
+.lg i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:4px;border-radius:2px}
+.zoombtn{background:#eef0f3;color:#555;font-size:11.5px;padding:5px 11px;margin-left:6px;vertical-align:middle}
+.delbtn{background:#fdecec;color:#c0392b;font-size:11.5px;padding:5px 11px;margin-left:5px;vertical-align:middle;font-weight:600}
+.delbtn:hover{background:#c0392b;color:#fff}
+#hidbar{font-size:12px;color:#8a929c;margin:-4px 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#hidbar b{color:#c0392b}
+#hidbar button{background:#eef0f3;color:#444;font-size:11.5px;padding:4px 11px;border-radius:6px;font-weight:600}
+#hidbar button:hover{background:#dfe3e8}
+/* 페이지 내 비밀번호 확인창 (브라우저 prompt 차단 대비) */
+.pwback{position:fixed;inset:0;background:rgba(20,24,30,.5);z-index:200;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.pwbox{background:#fff;border-radius:14px;padding:22px 24px;width:400px;max-width:92vw;
+  box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.pwbox h3{margin:0 0 8px;font-size:16px;color:#c0392b}
+.pwbox .pwd{font-size:12.5px;color:#555;line-height:1.65;margin-bottom:12px}
+.pwbox .pwsku{display:block;background:#f5f6f8;border-radius:7px;padding:7px 10px;
+  margin:7px 0;font-weight:700;color:#222;word-break:break-all}
+.pwbox input{width:100%;padding:10px 12px;font-size:15px;text-align:center;letter-spacing:3px;
+  border:1px solid #d7dbe0;border-radius:8px}
+.pwbox input:focus{outline:2px solid #c0392b;outline-offset:1px}
+.pwerr{color:#c0392b;font-size:12px;margin-top:7px;font-weight:600}
+.pwbtn{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.pwbtn button{padding:8px 18px;font-size:13px;font-weight:700;border-radius:8px;background:#eef0f3;color:#444}
+.pwbtn button.danger{background:#c0392b;color:#fff}
+.pwbtn button.danger:hover{background:#a93226}
+.ov{display:none;position:fixed;inset:0;background:rgba(20,24,30,.55);z-index:100;overflow:auto;padding:22px}
+.ov.on{display:block}
+.ovin{max-width:1280px;margin:0 auto;position:relative}
+.ovx{position:sticky;top:0;float:right;background:#fff;color:#333;box-shadow:0 2px 8px rgba(0,0,0,.25);
+ padding:10px 16px;font-size:14px;border-radius:8px;z-index:2;margin-bottom:8px}
+#ovbody .card{padding:22px}
+#ovbody .tt{font-size:19px}
+#ovbody .meta{font-size:13px;margin-bottom:12px}
+#ovbody .chartbox{flex:1 1 100%}
+#ovbody .panel{flex:1 1 100%;border-left:none;border-top:1px solid #eceef1;padding-left:0;padding-top:14px;max-width:520px}
+#ovbody .fld input,#ovbody .fld select{font-size:15px;padding:9px}
+#ovbody .det{font-size:14px}
+#ovbody .zoombtn{display:none}
+.pagehead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.help{position:relative;flex:none}
+.help summary{font-size:11.5px;font-weight:600;color:#9aa2ad;cursor:pointer;list-style:none;
+  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;
+  border:1px solid #e6e9ed;background:#fff;user-select:none}
+.help summary::-webkit-details-marker{display:none}
+.help summary:hover{color:#5f6672;border-color:#c7cbd1}
+.help-body{position:absolute;right:0;top:calc(100% + 6px);z-index:20;width:320px;max-width:80vw;
+  background:#fff;border:1px solid #e6e9ed;border-radius:10px;padding:14px 16px;
+  font-size:12px;line-height:1.7;color:#5f6672;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.help-body b{color:#111}
+/* ── 오늘의 핵심 (수요예측 탭과 같은 방식) ── */
+.today{margin:0 0 16px}
+.today-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.today-head h2{font-size:18px;font-weight:600;margin:0;letter-spacing:-.01em;color:#111}
+.today-asof{font-size:12px;color:#9aa2ad;font-variant-numeric:tabular-nums}
+.today-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.today-col{background:#fff;border:1px solid #e6e9ed;border-radius:12px;overflow:hidden}
+.today-col-head{display:flex;align-items:center;gap:8px;padding:12px 15px 10px}
+.today-dot{width:7px;height:7px;border-radius:50%;flex:none}
+.today-dot.up{background:#00c805}.today-dot.down{background:#ff5000}
+.today-col-t{font-size:12px;font-weight:700;color:#5f6672}
+.today-cnt{margin-left:auto;font-size:12px;color:#9aa2ad;font-variant-numeric:tabular-nums}
+.today-row{display:flex;align-items:center;gap:11px;padding:10px 15px;border-top:1px solid #eef0f3}
+.today-nm{flex:1;min-width:0}
+/* SKU 이름이 길어서 한 줄로는 잘린다 — 두 줄까지 보여준다 */
+.today-nm b{display:block;font-size:13px;font-weight:600;color:#111;line-height:1.35;
+  word-break:break-all;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.today-nm span{display:block;font-size:11.5px;color:#9aa2ad;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-fig{text-align:right;flex:none}
+.today-fig b{display:block;font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums;color:#111}
+.today-fig span{display:block;font-size:11.5px;color:#9aa2ad;margin-top:2px}
+.today-badge{flex:none;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+  padding:3px 8px;border-radius:6px;min-width:50px;text-align:center}
+.today-badge.up{color:#00a004;background:rgba(0,200,5,.12)}
+.today-badge.down{color:#e04600;background:rgba(255,80,0,.12)}
+.today-empty{padding:20px 15px;font-size:12.5px;color:#9aa2ad;border-top:1px solid #eef0f3}
+.today-note{font-size:11.5px;color:#9aa2ad;padding:9px 15px 11px;border-top:1px solid #eef0f3;line-height:1.6}
+.chartbox.full{flex:1 1 100%}
+
+/* ── 일별 출고 추이 (플랫폼별, 커서 올리면 그날 구성) ── */
+.trend{margin:0 0 16px}
+.trend-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.trend-head h2{font-size:18px;font-weight:600;margin:0;letter-spacing:-.01em;color:#111}
+.trend-sub{font-size:12px;color:#9aa2ad;font-variant-numeric:tabular-nums}
+.trend-days{margin-left:auto;display:flex;gap:5px}
+.trend-days button{font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid #e6e9ed;
+  background:#f5f6f8;color:#5f6672;cursor:pointer;font-weight:600}
+.trend-days button.on{background:#1f6b3a;border-color:#1f6b3a;color:#fff}
+.trend-body{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.trend-chart{flex:1 1 460px;min-width:0;background:#fff;border:1px solid #e6e9ed;border-radius:12px;padding:14px 12px 8px;position:relative}
+.trend-chart svg{width:100%;height:auto;display:block;overflow:visible}
+.tbar{cursor:pointer}
+.tbar rect.hit{fill:transparent}
+.tbar rect.bar{transition:opacity .1s}
+.tbar:hover rect.bar{opacity:.75}
+.tbar.sel rect.bar{stroke:#111;stroke-width:1.5}
+.trend-tip{flex:0 0 290px;background:#fff;border:1px solid #e6e9ed;border-radius:12px;padding:13px 15px;
+  font-size:12.5px;max-height:330px;overflow:auto}
+.trend-tip .d{font-size:13px;font-weight:700;color:#111;margin-bottom:2px}
+.trend-tip .tot{font-size:11.5px;color:#9aa2ad;margin-bottom:9px;font-variant-numeric:tabular-nums}
+.trend-tip .it{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-top:1px solid #eef0f3;line-height:1.35}
+.trend-tip .it .n{flex:1;min-width:0;color:#444;word-break:break-all;overflow-wrap:anywhere}
+.trend-tip .it .q{flex:none;font-weight:700;color:#111;font-variant-numeric:tabular-nums}
+.trend-tip .it .pc{flex:none;width:38px;text-align:right;color:#9aa2ad;font-variant-numeric:tabular-nums}
+.trend-tip .hint{color:#9aa2ad;line-height:1.6}
+
+/* ── 이커머스 비중 (전체 출고 대비 쿠팡·컬리 비중) ── */
+.share{margin:0 0 16px}
+.share-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.share-head h2{font-size:18px;font-weight:600;margin:0;letter-spacing:-.01em;color:#111}
+.share-head select{margin-left:auto;font-size:12.5px;padding:5px 9px;border-radius:6px;
+  border:1px solid #e6e9ed;background:#fff;color:#5f6672;font-weight:600}
+.share-body{display:flex;align-items:center;gap:4px;background:#fff;border:1px solid #e6e9ed;
+  border-radius:12px;padding:20px 18px;flex-wrap:wrap}
+.share-node{flex:none;border-radius:10px;padding:14px 16px;min-width:160px}
+.share-node.src{background:#f5f6f8;border:1px solid #e6e9ed}
+.share-node-t{font-size:12px;font-weight:700;color:#5f6672;margin-bottom:6px;display:flex;
+  align-items:baseline;gap:6px}
+.share-toggle{font-size:11px;font-weight:600;color:#9aa2ad}
+.share-node-v{font-size:20px;font-weight:700;color:#111;font-variant-numeric:tabular-nums}
+.share-node-v span{display:block;font-size:11.5px;font-weight:600;color:#9aa2ad;margin-top:2px}
+.share-arrows{flex:none;color:#c7cbd1}
+.share-targets{display:flex;flex-direction:column;gap:8px;flex:1 1 200px;min-width:180px}
+.share-node.ecom{background:rgba(31,107,58,.08);border:1px solid rgba(31,107,58,.25);cursor:pointer}
+.share-node.ecom:hover,.share-node.ecom:focus-visible{background:rgba(31,107,58,.13);outline:none}
+.share-node.ecom .share-node-v b{color:#1f6b3a}
+.share-node.other{background:#f5f6f8;border:1px solid #e6e9ed}
+.share-detail{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(31,107,58,.3);
+  display:flex;gap:14px;font-size:12px;color:#5f6672}
+.share-detail[hidden]{display:none}
+.share-detail b{color:#111;font-variant-numeric:tabular-nums}
+.share-note{font-size:11.5px;color:#9aa2ad;margin-top:8px;line-height:1.6}
+
+/* ── 다크 모드 ──────────────────────────────────────────────────────
+   위 대시보드에서 다크로 바꾸면 iframe 안인 이 화면도 같이 바뀐다.
+   (부모가 postMessage 로 알려주고, 아래 JS 가 <html data-theme> 을 세운다)
+   기존 색이 전부 하드코딩이라, 눈에 보이는 표면만 골라 덮어쓴다. */
+:root[data-theme="dark"]{
+  --d-page:#0d0d0d; --d-surf:#1a1a19; --d-surf2:#232320; --d-line:#33332e;
+  --d-t1:#f0efec; --d-t2:#b9b7ad; --d-t3:#8b8881;
+  --d-acc:#5ec27f; --d-acc-bg:rgba(94,194,127,.14);
+  --d-dan:#ef6b5e; --d-dan-bg:rgba(239,107,94,.14);
+}
+:root[data-theme="dark"] body{background:var(--d-page);color:var(--d-t1)}
+:root[data-theme="dark"] h1,
+:root[data-theme="dark"] .today-head h2,
+:root[data-theme="dark"] .today-nm b,
+:root[data-theme="dark"] .today-fig b,
+:root[data-theme="dark"] .txntxt b,
+:root[data-theme="dark"] .pwbox .pwsku,
+:root[data-theme="dark"] .lg1 b{color:var(--d-t1)}
+:root[data-theme="dark"] .sub,
+:root[data-theme="dark"] .meta,
+:root[data-theme="dark"] .today-col-t,
+:root[data-theme="dark"] .txntxt,
+:root[data-theme="dark"] .txn-sub,
+:root[data-theme="dark"] .adcard .sub2,
+:root[data-theme="dark"] .pwbox .pwd,
+:root[data-theme="dark"] .lg1 .sp,
+:root[data-theme="dark"] .stat{color:var(--d-t2)}
+:root[data-theme="dark"] .today-asof,
+:root[data-theme="dark"] .today-cnt,
+:root[data-theme="dark"] .today-nm span,
+:root[data-theme="dark"] .today-fig span,
+:root[data-theme="dark"] .today-empty,
+:root[data-theme="dark"] .today-note,
+:root[data-theme="dark"] .lg,
+:root[data-theme="dark"] .det .k,
+:root[data-theme="dark"] .logs .t,
+:root[data-theme="dark"] .adtbl th,
+:root[data-theme="dark"] .adempty,
+:root[data-theme="dark"] .adchart .acap,
+:root[data-theme="dark"] #hidbar,
+:root[data-theme="dark"] #txnStatus,
+:root[data-theme="dark"] table.txn-tbl th{color:var(--d-t3)}
+/* 표면 */
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .today-col,
+:root[data-theme="dark"] .adcard,
+:root[data-theme="dark"] .pwbox,
+:root[data-theme="dark"] .txn-modal,
+:root[data-theme="dark"] .bar,
+:root[data-theme="dark"] .hitem{background:var(--d-surf);border-color:var(--d-line)}
+:root[data-theme="dark"] .txncard{background:var(--d-surf2);border-color:var(--d-line)}
+:root[data-theme="dark"] .txncard.over{background:rgba(94,194,127,.10);border-color:var(--d-acc)}
+/* 사용법 접기 · 이커머스 비중 */
+:root[data-theme="dark"] .help summary,
+:root[data-theme="dark"] .help-body,
+:root[data-theme="dark"] .share-head select,
+:root[data-theme="dark"] .share-body{background:var(--d-surf);border-color:var(--d-line);color:var(--d-t2)}
+:root[data-theme="dark"] .help-body b,
+:root[data-theme="dark"] .share-head h2,
+:root[data-theme="dark"] .share-node-v,
+:root[data-theme="dark"] .share-detail b{color:var(--d-t1)}
+:root[data-theme="dark"] .share-node.src,
+:root[data-theme="dark"] .share-node.other{background:var(--d-surf2);border-color:var(--d-line)}
+:root[data-theme="dark"] .share-node.ecom{background:var(--d-acc-bg);border-color:var(--d-acc)}
+:root[data-theme="dark"] .share-node.ecom:hover{background:rgba(94,194,127,.22)}
+:root[data-theme="dark"] .share-node.ecom .share-node-v b{color:var(--d-acc)}
+:root[data-theme="dark"] .share-node-t,
+:root[data-theme="dark"] .share-detail{color:var(--d-t2)}
+:root[data-theme="dark"] .share-node-v span,
+:root[data-theme="dark"] .share-toggle,
+:root[data-theme="dark"] .share-note,
+:root[data-theme="dark"] .cchev{color:var(--d-t3)}
+:root[data-theme="dark"] .share-arrows{color:var(--d-line)}
+:root[data-theme="dark"] .det,
+:root[data-theme="dark"] .adj,
+:root[data-theme="dark"] .lg1,
+:root[data-theme="dark"] .adtbl th,
+:root[data-theme="dark"] table.txn-tbl th,
+:root[data-theme="dark"] .hidhead{background:var(--d-surf2);border-color:var(--d-line)}
+:root[data-theme="dark"] .tbl-wrap,
+:root[data-theme="dark"] .txn-tbl-wrap{background:var(--d-surf);border-color:var(--d-line)}
+:root[data-theme="dark"] .today-row,
+:root[data-theme="dark"] .today-empty,
+:root[data-theme="dark"] .today-note,
+:root[data-theme="dark"] table.txn-tbl td,
+:root[data-theme="dark"] table.txn-tbl th,
+:root[data-theme="dark"] .adtbl td,
+:root[data-theme="dark"] .adtbl th{border-color:var(--d-line)}
+:root[data-theme="dark"] .adtbl td.mk,
+:root[data-theme="dark"] .adtbl .pu{color:var(--d-t2)}
+:root[data-theme="dark"] .adtbl tr.zero td{color:var(--d-t3)}
+/* 입력·버튼 */
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .pwbox input{background:var(--d-surf2);color:var(--d-t1);border-color:var(--d-line)}
+:root[data-theme="dark"] .ghost,
+:root[data-theme="dark"] .zoombtn,
+:root[data-theme="dark"] #hidbar button,
+:root[data-theme="dark"] .adyears button,
+:root[data-theme="dark"] .metrics button,
+:root[data-theme="dark"] .tmet button,
+:root[data-theme="dark"] .hidhead button,
+:root[data-theme="dark"] .pwbtn button,
+:root[data-theme="dark"] .tabs button,
+:root[data-theme="dark"] .btabs button{background:var(--d-surf2);color:var(--d-t2);border-color:var(--d-line)}
+:root[data-theme="dark"] .tabs button.on,
+:root[data-theme="dark"] .btabs button.on,
+:root[data-theme="dark"] .metrics button.on,
+:root[data-theme="dark"] .tmet button.on,
+:root[data-theme="dark"] .adyears button.on{background:var(--d-acc);color:#0d0d0d;border-color:var(--d-acc)}
+:root[data-theme="dark"] .txnpick,
+:root[data-theme="dark"] .txn-actions .go,
+:root[data-theme="dark"] .adjok,
+:root[data-theme="dark"] .primary{background:var(--d-acc);color:#0d0d0d}
+:root[data-theme="dark"] .syncstate.ok,
+:root[data-theme="dark"] #txnStatus.ok,
+:root[data-theme="dark"] .adjstate.ok,
+:root[data-theme="dark"] .txn-daily-btn,
+:root[data-theme="dark"] .det b,
+:root[data-theme="dark"] .hintq b{color:var(--d-acc)}
+:root[data-theme="dark"] .bnew,
+:root[data-theme="dark"] .lock,
+:root[data-theme="dark"] .mini{background:var(--d-acc-bg);color:var(--d-acc)}
+:root[data-theme="dark"] .syncstate.warn,
+:root[data-theme="dark"] #txnStatus.warn,
+:root[data-theme="dark"] .adjstate.warn,
+:root[data-theme="dark"] .pwerr,
+:root[data-theme="dark"] .pwbox h3,
+:root[data-theme="dark"] #hidbar b,
+:root[data-theme="dark"] .delbtn{color:var(--d-dan)}
+:root[data-theme="dark"] .delbtn,
+:root[data-theme="dark"] .bno,
+:root[data-theme="dark"] .del{background:var(--d-dan-bg);color:var(--d-dan)}
+:root[data-theme="dark"] .note,
+:root[data-theme="dark"] .txn-miss{background:rgba(224,168,0,.10);color:var(--d-t2);border-left-color:#c99a1e}
+:root[data-theme="dark"] .rocket{background:var(--d-surf2);color:var(--d-t3)}
+:root[data-theme="dark"] .rocket.on{background:rgba(224,145,58,.16);color:#e0913a}
+:root[data-theme="dark"] .today-badge.up{color:#00c805;background:rgba(0,200,5,.16)}
+:root[data-theme="dark"] .today-badge.down{color:#ff7433;background:rgba(255,80,0,.16)}
+:root[data-theme="dark"] .today-row:hover,
+:root[data-theme="dark"] tr:hover td{background:var(--d-surf2)}
+/* 그래프 — 눈금선·축글씨는 SVG 속성이라 CSS 로 덮어야 한다 */
+:root[data-theme="dark"] .chartbox svg line{stroke:var(--d-line)}
+:root[data-theme="dark"] .chartbox svg text{fill:var(--d-t3)}
+:root[data-theme="dark"] .trend-head h2,
+:root[data-theme="dark"] .trend-tip .d,
+:root[data-theme="dark"] .trend-tip .it .q{color:var(--d-t1)}
+:root[data-theme="dark"] .trend-sub,
+:root[data-theme="dark"] .trend-tip .tot,
+:root[data-theme="dark"] .trend-tip .pc,
+:root[data-theme="dark"] .trend-tip .hint{color:var(--d-t3)}
+:root[data-theme="dark"] .trend-tip .it .n{color:var(--d-t2)}
+:root[data-theme="dark"] .trend-chart,
+:root[data-theme="dark"] .trend-tip{background:var(--d-surf);border-color:var(--d-line)}
+:root[data-theme="dark"] .trend-tip .it{border-color:var(--d-line)}
+:root[data-theme="dark"] .trend-days button{background:var(--d-surf2);border-color:var(--d-line);color:var(--d-t2)}
+:root[data-theme="dark"] .trend-days button.on{background:var(--d-acc);border-color:var(--d-acc);color:#0d0d0d}
+:root[data-theme="dark"] .trend-chart svg line{stroke:var(--d-line)}
+:root[data-theme="dark"] .trend-chart svg text{fill:var(--d-t3)}
+:root[data-theme="dark"] .tbar.sel rect.bar{stroke:var(--d-t1)}
+:root[data-theme="dark"] .adchart svg line{stroke:var(--d-line)}
+:root[data-theme="dark"] .adchart svg text{fill:var(--d-t3)}
+/* 거래내역(.xls) 드롭존 — 매일 자료 주면 자동 갱신 */
+.txncard{display:flex;align-items:center;gap:14px;border:2px dashed #cfd6de;border-radius:10px;
+  padding:16px 18px;margin-bottom:12px;background:#fafbfc;cursor:pointer}
+.txncard.over{border-color:#1f6b3a;background:#f0f8f3}
+.txnicon{font-size:26px}
+.txntxt{font-size:12.5px;color:#666;line-height:1.55}
+.txntxt b{color:#222;font-size:13.5px}
+.txnpick{display:inline-block;margin-top:5px;background:#1f6b3a;color:#fff;font-size:11.5px;
+  font-weight:700;padding:4px 11px;border-radius:6px}
+#txnStatus{font-size:12px;color:#888;margin:-4px 0 12px;min-height:15px}
+#txnStatus.ok{color:#1f6b3a;font-weight:600}
+#txnStatus.warn{color:#c0392b;font-weight:600}
+.txn-ov{display:none;position:fixed;inset:0;background:rgba(20,24,30,.55);z-index:150;overflow:auto;padding:22px}
+.txn-ov.on{display:flex;align-items:flex-start;justify-content:center}
+.txn-modal{background:#fff;border-radius:12px;padding:22px 24px;max-width:920px;width:96vw;
+  max-height:90vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.txn-modal h3{margin:0 0 10px}
+.txn-sub{font-size:12.5px;color:#666;margin-bottom:12px;line-height:1.6}
+.txn-tbl-wrap{overflow-x:auto;border:1px solid #e6e9ed;border-radius:8px;max-height:44vh;margin-bottom:10px}
+table.txn-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:640px}
+table.txn-tbl th{position:sticky;top:0;background:#f8f9fb;font-size:10.5px;font-weight:700;color:#888;
+  text-align:left;padding:6px 8px;border-bottom:1px solid #e6e9ed}
+table.txn-tbl td{padding:5px 8px;border-bottom:1px solid #f0f1f3}
+table.txn-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+table.txn-tbl .rkt{color:#c9720a;font-weight:700;font-size:11px}
+.txn-miss{background:#fff8e6;border-left:3px solid #e0a800;padding:9px 12px;font-size:11.5px;
+  border-radius:4px;margin-bottom:10px;line-height:1.7}
+.txn-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.txn-actions button{padding:9px 18px;font-size:13px;font-weight:700;border-radius:8px}
+.txn-actions .go{background:#1f6b3a;color:#fff}
+.txn-daily{margin-top:6px}
+.txn-daily-btn{background:none;border:none;color:#1f6b3a;font-size:11px;font-weight:700;cursor:pointer;padding:0}
+</style></head><body>
+<div class="pagehead">
+  <div>
+    <h1>SKU별 월별 판매실적 관리</h1>
+    <div class="sub">쿠팡 · 컬리 통합 · 거래내역(.xls) 파일을 올리면 실적이 자동으로 채워집니다</div>
+  </div>
+  <details class="help">
+    <summary>사용법</summary>
+    <div class="help-body">
+      실적은 <b>거래내역 끌어놓기</b>로만 들어옵니다. <b>오늘의 핵심</b>에서 갑자기 뛴 SKU와 마진이 나빠진 SKU를 바로 볼 수 있고, 그래프의 점을 누르면 그 달의 수량·공급가·원가·마진이 표시됩니다. SKU 카드의 <b>⤢ 크게 보기</b>로 확대, <b>📅 일별 보기</b>로 날짜별 출고를 볼 수 있습니다.<br>
+      <b>SKU 추가·숨기기</b> · <b>＋ SKU 추가</b>로 새 제품을 만들면 거래내역에서 그 이름이 잡힐 때 실적이 붙고 광고비 합산에도 자동 포함됩니다. <b>🙈 숨기기</b>는 목록에서만 감추며 실적은 그대로 보관되고, 숨김 목록에서 하나씩 되돌릴 수 있습니다.<br>
+      <b>마진 계산</b> · 평균단가는 입력한 공급가(VAT 제외) × 1.10. 원가는 조정원가 = 수입원가 × (1 + 부가세 10% + 물류비 2%) = ×1.12. <b>마진액 = 평균단가(VAT포함) − 조정원가 − 개당 광고비</b>.<br>
+      <b>브랜드 탭</b> · 플랫폼 아래 브랜드 탭으로 나눠 볼 수 있습니다. 쿠팡은 <b>🚀 로켓배송</b> 등록 SKU에만 광고가 붙습니다. 브랜드 탭을 고르고 그 달 광고비 총액을 넣으면 로켓배송 등록 SKU 판매수량으로 나눠 개당 광고비가 자동 계산됩니다(2025년 1월부터).<br>
+      <b>원가 조정</b> · 부가세·물류비를 고친 뒤 확인을 눌러야 전체 SKU에 반영됩니다.
+    </div>
+  </details>
+</div>
+
+<div class="txncard" id="txnDrop">
+  <div class="txnicon">📦</div>
+  <div class="txntxt"><b>거래내역(.xls) 끌어놓기</b> — 쿠팡윙/컬리셀러에서 뽑은 출고 거래내역을 놓으면
+    SKU별 수량·공급가가 자동으로 채워지고, 쿠팡은 🚀로켓배송 여부도 같이 판별됩니다.
+    쿠팡·컬리 파일을 한번에 여러 개 놓아도 됩니다.<br><span class="txnpick" id="txnPick">파일 선택</span></div>
+  <input type="file" id="txnFile" accept=".xls,.html" multiple style="display:none">
+</div>
+<div id="txnStatus"></div>
+<div class="txn-ov" id="txnOv"><div class="txn-modal" id="txnModalBody"></div></div>
+
+<div class="tabs" id="tabs"></div>
+<div class="btabs" id="btabs"></div>
+
+<section class="trend" id="trendCard">
+  <div class="trend-head">
+    <h2>일별 출고 추이</h2>
+    <span class="trend-sub" id="trendSub"></span>
+    <span class="trend-days" id="trendDays"></span>
+  </div>
+  <div class="trend-body">
+    <div class="trend-chart" id="trendChart"></div>
+    <div class="trend-tip" id="trendTip"></div>
+  </div>
+</section>
+
+<section class="share" id="shareCard">
+  <div class="share-head">
+    <h2>이커머스 비중</h2>
+    <select id="shareYm"></select>
+  </div>
+  <div class="share-body">
+    <div class="share-node src">
+      <div class="share-node-t">전체 출고</div>
+      <div class="share-node-v" id="shareTotalV">–</div>
+    </div>
+    <svg class="share-arrows" viewBox="0 0 50 110" width="50" height="110" aria-hidden="true">
+      <path d="M0,55 L18,55 L18,20 L50,20" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M0,55 L18,55 L18,90 L50,90" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <div class="share-targets">
+      <div class="share-node ecom" id="shareEcomNode" tabindex="0" role="button" aria-expanded="false">
+        <div class="share-node-t">이커머스 (쿠팡·컬리) <span class="share-toggle">▾ 자세히</span></div>
+        <div class="share-node-v"><b id="shareEcomPct">–</b><span id="shareEcomV"></span></div>
+        <div class="share-detail" id="shareEcomDetail" hidden>
+          <div>쿠팡 <b id="shareCoupangV">–</b></div>
+          <div>컬리 <b id="shareKurlyV">–</b></div>
+        </div>
+      </div>
+      <div class="share-node other">
+        <div class="share-node-t">기타 채널 (오프라인 등)</div>
+        <div class="share-node-v"><b id="shareOtherPct">–</b><span id="shareOtherV"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="share-note">전체 출고(수요예측 실적)에서 쿠팡·컬리 거래내역이 차지하는 비중이에요. 나머지는 오프라인·B2B 등으로 추정한 값이라 참고용이에요.</div>
+</section>
+
+<section class="today" id="ecomToday">
+  <div class="today-head">
+    <h2>오늘의 핵심</h2>
+    <span class="today-asof" id="ecomAsOf"></span>
+  </div>
+  <div class="today-grid">
+    <div class="today-col">
+      <div class="today-col-head">
+        <span class="today-dot up"></span>
+        <span class="today-col-t">갑자기 뛴 판매</span>
+        <span class="today-cnt" id="ecomSurgeCnt"></span>
+      </div>
+      <div id="ecomSurgeList"></div>
+    </div>
+    <div class="today-col">
+      <div class="today-col-head">
+        <span class="today-dot down"></span>
+        <span class="today-col-t">마진이 위험한 SKU</span>
+        <span class="today-cnt" id="ecomRiskCnt"></span>
+      </div>
+      <div id="ecomRiskList"></div>
+    </div>
+  </div>
+</section>
+<div id="hidbar"></div>
+<div id="adpanel"></div>
+<div class="bar">
+  <span style="font-size:12px;color:#888;font-weight:600">SKU별 그래프는 수량 기준</span>
+  <span class="adj">원가 조정 &nbsp;부가세 <input type="number" id="vat" value="10" min="0" step="0.1">%
+    &nbsp;물류비 <input type="number" id="log" value="2" min="0" step="0.1">%
+    <button id="adjok" class="adjok">확인</button>
+    <span id="adjstate" class="adjstate"></span></span>
+  <button class="ghost" id="addsku">＋ SKU 추가</button>
+  <span style="flex:1"></span>
+  <input id="q" placeholder="SKU 검색">
+  <select id="sort"><option value="vol">물량순</option><option value="growth">성장률순</option><option value="name">이름순</option></select>
+  <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:5px">
+    <input type="checkbox" id="only26" checked style="width:auto;padding:0"> 최근 판매 SKU만</label>
+  <button class="ghost" id="expjson">💾 내보내기</button>
+  <button class="ghost" id="impjson">📂 가져오기</button>
+  <button class="ghost" id="mkshare">🔗 공유용 파일</button>
+  <input type="file" id="impfile" accept=".json,application/json" style="display:none">
+  <button class="ghost" id="resetall">이 탭 입력 초기화</button>
+  <div class="stat" id="stat"></div>
+</div>
+<div class="grid" id="grid"></div>
+<div class="ov" id="ov"><div class="ovin"><button class="ovx" id="ovx" title="닫기">✕ 닫기</button><div id="ovbody"></div></div></div>
+
+<script>
+"use strict";
+var ALL={"쿠팡": {"months": ["2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"], "skus": ["(스페인No.1)에스파뇰라 스프레이200ml(아보카도오일)(벌크)", "(세계No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)", "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(화이트)(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(올리브유)(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(현미유)(벌크)", "(세계No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)", "(스페인No.1)에스파뇰라 올리브유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이아보카도오일200ml(벌크)", "(스페인No.1)에스파뇰라 유기농올리브유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(에어프라이어전용오일)(벌크)", "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(화이트)(벌크)", "(스페인No.1)에스파뇰라 압착아보카도오일500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(포도씨유)(벌크)", "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(레드)(벌크)", "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(레드)(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(유기농올리브유)(벌크)", "(이탈리아직수입)에스파뇰라 발사믹식초500ml(벌크)", "(스페인NO.1)에스파뇰라 스프레이200ml(트러플올리브)(벌크)", "(스페인No.1)에스파뇰라 포도씨유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(레몬올리브유)(벌크)", "(스페인No.1)에스파뇰라 스프레이현미유200ml(벌크)", "(스페인No.1)에스파뇰라 틴케이스올리브유500ml(벌크)", "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,올리브,포도)", "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(블랙,만자니야)(벌크)", "(스페인No.1)에스파뇰라2종(유기농올리브,해바)", "(스페인No.1)에스파뇰라2종(유기농올리브2P)", "(스페인직수입)소르바스 유기농올리브유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이포도씨유200ml(벌크)", "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,올리브,포도)-상하,고급쇼핑백", "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(화이트,오히블랑카)(벌크)", "(스페인직수입)소르바스 해바라기유500ml(벌크)", "(스페인직수입)포스티보나 꿀국화차20티1P", "(스페인직수입)소르바스 포도씨유500ml(벌크)", "에스파뇰라2종(올리브,발사믹식초)", "(스페인직수입)소르바스 올리브유500ml(벌크)", "(스페인직수입)포스티보나 꿀루이보스20티1P", "(스페인No.1)에스파뇰라 스프레이200ml(바베큐맛올리브유)(벌크)", "(스페인직수입)포스티보나 꿀민트20티1P", "(스페인No.1)에스파뇰라 스프레이유기농올리브유200ml(벌크)", "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,포도,현미)-상하,고급쇼핑백", "에스파뇰라3종(유기농올리브2P,발사믹식초)", "(스페인직수입)포스티보나 꿀홍차20티1P", "(스페인직수입)포스티보나 올리브열매360g(허브맛,씨있음,그린)(벌크)", "(스페인No.1)에스파뇰라 스프레이지중해요리유200ml(벌크)", "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(실버,베라사테기)(벌크)", "(스페인직수입)포스티보나 올리브열매360g(파프리카맛,씨있음,레드)(벌크)", "(지구No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)", "(스페인No.1)에스파뇰라2종(유기농올리브,포도)", "(스페인No.1)에스파뇰라2종(올리브2P)", "(스페인직수입)포스티보나 그린홀올리브열매350g(씨있음)(벌크)", "(스페인No.1)에스파뇰라 마일드올리브유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,트러플)-상하,고급쇼핑백", "(스페인No.1)에스파뇰라2종(마일드올리브2P)", "(스페인직수입)포스티보나 스프레이200ml(기오일)(벌크)", "(스페인직수입)소르바스2종(올리브,포도)", "(스페인No.1)에스파뇰라4종(포도2P,해바2P)", "(스페인직수입)소르바스3종(올리브,포도,해바)", "(스페인NO.1)에스파뇰라3종(올리브3P)", "(스페인No.1)에스파뇰라3종(올리브2P,해바)", "(스페인직수입)소르바스2종(올리브,해바)", "(스페인No.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,트러플)", "(스페인No.1)에스파뇰라2종(포도2P)", "(스페인직수입)포스티보나 그린피티드올리브열매350g(씨없음)(벌크)", "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,현미)-상하,고급쇼핑백", "(스티로폼)에스파뇰라2종(올리브,발사믹식초)", "(스페인직수입)포스티보나 꿀캐모마일차20티1P", "(트레이)에스파뇰라2종(올리브,발사믹식초)"], "data": {"(스페인No.1)에스파뇰라 스프레이200ml(아보카도오일)(벌크)": {"q": [480, 1230, 3600, 1200, 240, 960, 960, 2400, 4080, 0, 0, 624, 4080, 2592, 1920, 1380, 1680, 360, 1200, 2040, 660, 2196, 1620, 1512, 1260, 1740, 2580, 1140, 1020, 960, 1500], "a": [2720291, 6970743, 20402177, 7636365, 1527273, 6109092, 6109092, 15272728, 25963636, 0, 0, 3970910, 25963637, 16494546, 12218184, 8781819, 10690911, 2290908, 7636362, 12981818, 4200000, 13974543, 10309090, 9621816, 8018181, 11072728, 16418182, 7157184, 6380564, 6005236, 9383181], "c": [3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3133, 3133, 3133, 3312, 3312, 3312, 3312, 3282, 3402, 3402, 3474, 3474, 4672, 4605, 4605, 5619, 4817, 4817], "cn": "에스파뇰라스프레이아보카도오일200ml"}, "(세계No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, 960, 1392, 864, 2904, 2064, 2232, 2160, 1872, 1104, 2664, 2520, 336, 2016, 1368, 72, 120, 1128, 888, 912, 648, 1824, 1104], "a": [null, null, null, null, null, null, null, null, null, 3840000, 5568000, 3456000, 11616000, 8256000, 8928000, 8640000, 7488000, 4416000, 10656000, 10080000, 1344000, 8064000, 5472000, 288000, 480000, 4512000, 3552000, 3233457, 2297456, 6466914, 3914184], "c": [1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1878, 1878, 1871, 1871, 1871, 1871, 1796, 1796, 1796, 1796, 1884, 1884, 1884, 1919, 1957, 1957, 1957, 1957, 1957], "cn": "킹프리미엄현미유500ml"}, "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(화이트)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, 32, 30, 0, 0, 90, 210, 120, 1410, 2010, 540, 540, 180, 180, 72, 0, 0, 0, 648, 4440, 2352, 1404, 2028], "a": [null, null, null, null, null, null, null, null, null, 177455, 166364, 0, 0, 499092, 1164546, 665455, 7819092, 11146366, 2994545, 2994545, 998181, 998182, 399273, 0, 0, 0, 3593452, 24621819, 13042910, 7785819, 11246180], "c": [2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2962, 2873, 2873, 2851, 2813, 2813, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921], "cn": "포스티보나모데나발사믹식초화이트250ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(올리브유)(벌크)": {"q": [null, null, null, 1188, 0, 396, 792, 396, 0, 0, 1188, 0, 0, 1152, 0, 360, 720, 420, 120, 420, 1080, 480, 300, 0, 300, 480, 960, 60, 0, 0, 0], "a": [null, null, null, 7020000, 0, 2340000, 5472000, 2736000, 0, 0, 8208000, 0, 0, 7959273, 0, 2487273, 4974546, 2901818, 829090, 2901816, 7461815, 3316362, 2072726, 0, 2072725, 3316361, 6632723, 414545, 0, 0, 0], "c": [3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3941, 4006, 4006, 3934, 3965, 3965, 3965, 3965, 3314, 3543, 3543, 3579, 3579, 3818, 3752, 3752, 3752, 3745, 3745], "cn": "에스파뇰라스프레이올리브유200ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(현미유)(벌크)": {"q": [null, 420, 120, 0, 0, 600, 720, 360, 600, 360, 420, 0, 720, 480, 120, 240, 240, 180, 300, 300, 60, 360, 120, 180, 300, 360, 300, 300, 60, 240, 300], "a": [null, 2010272, 574364, 0, 0, 2871820, 3446184, 1723092, 2871819, 1723091, 2010274, 0, 3446182, 2297456, 574364, 1148728, 1148728, 861546, 1435910, 1435910, 287182, 1723092, 574364, 861546, 1435910, 1723092, 1435910, 1405146, 279491, 1117964, 1397455], "c": [2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2566, 2566, 2566, 2539, 2539, 2563, 2563, 2599, 2599, 2599, 2772, 2772, 2772, 2833, 2833, 2833, 2833, 2917], "cn": "에스파뇰라스프레이현미유200ml"}, "(세계No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, 26, 60, 72, 144, 48, 156, 216, 192, 0, 0, 156, 528, 1488, 492, 1344, 1236, 888, 1284], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, 179636, 414545, 497454, 994908, 331636, 1077817, 1492362, 1326544, 0, 0, 1077818, 3647999, 10280725, 3399271, 8552727, 7865456, 5650910, 8170912], "c": [3199, 3199, 3199, 3199, 3199, 3199, 3199, 3199, 3199, 3199, 3199, 3199, 3527, 3527, 3513, 3513, 3513, 3513, 3353, 3353, 3353, 3353, 3516, 3516, 3516, 3582, 3636, 3636, 3636, 3636, 3636], "cn": "킹프리미엄현미유1000ml"}, "(스페인No.1)에스파뇰라 올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, 2, 432, 516, 444, 120, 276, 132, 132, 480, 36, 252, 300, 84, 0, 0, 0, 0, 0, 0, 0, 60, 108, 0, 0, 96], "a": [null, null, null, null, null, null, 23455, 5066181, 6051272, 5206910, 1407272, 3236726, 1548000, 1548001, 5629091, 422182, 2955275, 3518182, 985091, 0, 0, 0, 0, 0, 0, 0, 703635, 1158545, 0, 0, 1029816], "c": [6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6027, 6027, 6027, 6027, 5628, 5196, 5196, 5196, 5196, 5291, 5511, 5511, 5511, 5511, 5612, 5612, 5612], "cn": "에스파뇰라올리브유500ml"}, "(스페인No.1)에스파뇰라 스프레이아보카도오일200ml(벌크)": {"q": [2982, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [16899803, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3180, 3133, 3133, 3133, 3312, 3312, 3312, 3312, 3282, 3402, 3402, 3474, 3474, 4672, 4605, 4605, 5619, 4817, 4817], "cn": "에스파뇰라스프레이아보카도오일200ml"}, "(스페인No.1)에스파뇰라 유기농올리브유500ml(벌크)": {"q": [null, null, null, 36, 36, 144, 192, 108, 72, 48, 72, 84, 36, 156, 12, 132, 48, 84, 132, 108, 72, 0, 0, 120, 72, 180, 120, 24, 108, 144, 192], "a": [null, null, null, 409091, 409092, 1636363, 2301818, 1325455, 883636, 589092, 883636, 1030909, 441819, 1914544, 147273, 1620002, 589090, 1030909, 1620000, 1325456, 883636, 0, 0, 1472727, 883636, 2209093, 1472728, 272728, 1227275, 1636367, 2181822], "c": [6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 6942, 5942, 5558, 5558, 5558, 5558, 5633, 5901, 5901, 5901, 5901, 5901, 5901, 5901], "cn": "에스파뇰라유기농올리브유500ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(에어프라이어전용오일)(벌크)": {"q": [null, null, null, null, null, null, 2, 17, 63, 0, 0, 0, 0, 60, 60, 60, 0, 0, 0, 0, 60, 0, 60, 0, 0, 0, 30, 360, 300, 540, 900], "a": [null, null, null, null, null, null, 9818, 83454, 309272, 0, 0, 0, 0, 294545, 294545, 294545, 0, 0, 0, 0, 294545, 0, 294545, 0, 0, 0, 147273, 1767274, 1472728, 2650906, 4303635], "c": [2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2620, 2664, 2664, 2664, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2718, 2718, 2718, 2718, 2718, 2834], "cn": "에스파뇰라스프레이에어프라이어200ml"}, "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(화이트)(벌크)": {"q": [null, null, null, null, null, null, null, 50, 0, 0, 48, 0, 48, 48, 0, 48, 0, 0, 0, 0, 48, 0, 0, 48, 48, 0, 0, 208, 176, 460, 144], "a": [null, null, null, null, null, null, null, 222727, 0, 0, 213818, 0, 213818, 213818, 0, 213818, 0, 0, 0, 0, 213818, 0, 0, 213818, 213819, 0, 0, 907635, 767998, 2007276, 628365], "c": [1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 2091, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029], "cn": "포스티보나글레이즈화이트250ml"}, "(스페인No.1)에스파뇰라 압착아보카도오일500ml(벌크)": {"q": [48, 108, 216, 120, 0, 216, 60, 0, 0, 0, 0, 24, 12, 24, 36, 12, 24, 48, 0, 24, 24, 36, 12, 12, 60, 72, 12, 36, 0, 36, 84], "a": [532364, 1197819, 2395637, 1330910, 0, 2395637, 665455, 0, 0, 0, 0, 266182, 133091, 266182, 399273, 133091, 266182, 532364, 0, 266182, 266182, 399273, 133091, 133091, 665455, 798546, 133091, 392727, 0, 392727, 916363], "c": [5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 5968, 6133, 6133, 6431, 6431, 6548, 8266, 8266, 8266, 8266, 8266, 8266, 8266], "cn": "에스파뇰라압착아보카도오일500ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(포도씨유)(벌크)": {"q": [null, null, null, null, null, null, null, 60, 120, 60, 0, 0, 60, 0, 60, 0, 60, 0, 60, 0, 0, 120, 60, 60, 60, 30, 150, 0, 60, 30, 60], "a": [null, null, null, null, null, null, null, 280091, 560182, 280091, 0, 0, 280091, 0, 280091, 0, 280091, 0, 280091, 0, 0, 560182, 280091, 280091, 280090, 140045, 700225, 0, 275072, 137536, 275072], "c": [2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2654, 2654, 2654, 2654, 2654, 2737, 2737, 2778, 3016, 3016, 3016, 3016, 3016, 3025, 3025, 3025, 3025, 3137], "cn": "에스파뇰라스프레이포도씨유200ml"}, "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(레드)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, 2, 30, 0, 30, 30, 30, 30, 180, 0, 0, 0, 0, 0, 0, 0, 132, 84, 108, 192, 132, 0, 108], "a": [null, null, null, null, null, null, null, null, null, 14000, 210000, 0, 210000, 210000, 210000, 210000, 1260000, 0, 0, 0, 0, 0, 0, 0, 924000, 588000, 756000, 1269295, 872641, 0, 713979], "c": [3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3741, 3741, 3712, 3813, 3813, 3813, 3813, 4050, 4050, 4050, 4050, 4050, 4050, 4050, 4050], "cn": "포스티보나모데나발사믹식초레드250ml"}, "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(레드)(벌크)": {"q": [null, null, null, null, null, null, null, 50, 0, 0, 0, 0, 0, 0, 0, 48, 0, 48, 0, 0, 0, 0, 48, 0, 12, 0, 60, 156, 84, 252, 240], "a": [null, null, null, null, null, null, null, 222727, 0, 0, 0, 0, 0, 0, 0, 213818, 0, 213818, 0, 0, 0, 0, 213818, 0, 53455, 0, 267275, 638183, 343637, 1030911, 981820], "c": [2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2314, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245], "cn": "포스티보나글레이즈레드250ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(유기농올리브유)(벌크)": {"q": [null, null, null, null, null, 60, 180, 0, 0, 0, 0, 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 120, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 365455, 1161819, 0, 0, 0, 0, 2585454, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 861818, 0, 0, 0, 0, 0, 0, 0], "c": [4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4168, 4054, 4054, 4054, 4054, 4054, 3674, 3674, 3430, 3430, 3430, 3430, 3430, 3797, 3797, 3797, 3797, 3797, 3797], "cn": "에스파뇰라스프레이유기농올리브유200ml"}, "(이탈리아직수입)에스파뇰라 발사믹식초500ml(벌크)": {"q": [null, null, null, null, null, null, null, 14, 24, 24, 24, 0, 12, 24, 24, 24, 60, 24, 36, 24, 36, 36, 12, 48, 24, 36, 12, 72, 48, 12, 60], "a": [null, null, null, null, null, null, null, 70000, 120000, 120000, 120000, 0, 60000, 120000, 120000, 120000, 300000, 120000, 180000, 120000, 180000, 180000, 60000, 240000, 120000, 180000, 60000, 353454, 235636, 58909, 294545], "c": [3595, 3595, 3595, 3595, 3595, 3595, 3595, 3595, 3595, 3595, 3595, 3595, 2725, 2709, 2821, 2821, 2821, 2821, 2821, 2821, 2930, 3009, 3009, 3009, 3009, 3009, 3127, 3127, 3127, 3709, 3527], "cn": "에스파뇰라발사믹식초500ml"}, "(스페인NO.1)에스파뇰라 스프레이200ml(트러플올리브)(벌크)": {"q": [null, null, null, 60, 0, 0, 0, 60, 90, 138, 0, 0, 0, 0, 0, 6, 42, 0, 0, 0, 0, 12, 0, 30, 42, 48, 72, 12, 0, 12, 48], "a": [null, null, null, 414545, 0, 0, 0, 414545, 621818, 953455, 0, 0, 0, 0, 0, 41455, 290182, 0, 0, 0, 0, 82909, 0, 207273, 290181, 331636, 497454, 78545, 0, 78545, 314180], "c": [4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 4358, 3599, 3599, 3599, 3599, 3599, 3599, 3481, 3481, 3481, 3481, 3614], "cn": "에스파뇰라스프레이올리브유트러플200ml"}, "(스페인No.1)에스파뇰라 포도씨유500ml(벌크)": {"q": [null, null, null, null, null, null, 2, 12, 12, 24, 0, 24, 24, 12, 0, 12, 36, 24, 12, 48, 36, 0, 0, 0, 60, 84, 12, 48, 12, 36, 24], "a": [null, null, null, null, null, null, 14364, 86182, 86182, 172364, 0, 172364, 172364, 86182, 0, 86182, 258546, 172364, 86182, 344728, 258546, 0, 0, 0, 430910, 603274, 86182, 329804, 78720, 236160, 157440], "c": [3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3382, 3631, 3631, 3470, 3470, 3470, 3303, 3303, 3303, 3303, 3303, 3303, 3303, 3303, 3303, 3303, 3303, 3303], "cn": "에스파뇰라포도씨유500ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(레몬올리브유)(벌크)": {"q": [null, null, null, 60, 60, 60, 0, 0, 0, 24, 96, 0, 0, 24, 0, 0, 48, 0, 0, 0, 0, 24, 0, 24, 0, 0, 0, 24, 0, 0, 24], "a": [null, null, null, 381818, 381818, 381818, 0, 0, 0, 165818, 663274, 0, 0, 165818, 0, 0, 331636, 0, 0, 0, 0, 165818, 0, 165818, 0, 0, 0, 157090, 0, 0, 157090], "c": [3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3666, 3736, 3736, 3736, 3736, 3736, 3736], "cn": "에스파뇰라스프레이레몬올리브유200ml"}, "(스페인No.1)에스파뇰라 스프레이현미유200ml(벌크)": {"q": [420, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [2010274, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2336, 2566, 2566, 2566, 2539, 2539, 2563, 2563, 2599, 2599, 2599, 2772, 2772, 2772, 2833, 2833, 2833, 2833, 2917], "cn": "에스파뇰라스프레이현미유200ml"}, "(스페인No.1)에스파뇰라 틴케이스올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, 6, 48, 24, 24, 24, 24, 144, 48, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24], "a": [null, null, null, null, null, null, 78000, 624000, 312000, 312000, 312000, 312000, 1872000, 624000, 0, 0, 312000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 312000], "c": [7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080, 7080], "cn": "에스파뇰라틴케이스올리브유500ml"}, "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,올리브,포도)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 24, 48, 204, 108, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 436364, 872728, 3709094, 1963637, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(블랙,만자니야)(벌크)": {"q": [null, 60, 0, 20, 20, 40, 20, 20, 20, 0, 20, 0, 20, 0, 20, 20, 0, 0, 0, 20, 0, 0, 20, 0, 0, 48, 0, 0, 0, 0, 8], "a": [null, 856365, 0, 285455, 285455, 570910, 301818, 301818, 301818, 0, 301818, 0, 301818, 0, 301818, 301818, 0, 0, 0, 301818, 0, 0, 301818, 0, 0, 724364, 0, 0, 0, 0, 120727], "c": [7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7158, 7565, 7565, 6938, 7252, 7252, 7252, 7252, 7429, 7429, 7233], "cn": "에스파뇰라프리미엄올리브유만자니야500ml"}, "(스페인No.1)에스파뇰라2종(유기농올리브,해바)": {"q": [null, null, null, null, null, 80, 0, 80, 0, 20, 0, 80, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 1280000, 0, 1381818, 0, 345455, 0, 1381818, 1381818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라2종(유기농올리브2P)": {"q": [null, null, null, null, null, 40, 0, 120, 0, 10, 40, 40, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 865455, 0, 3098182, 0, 258182, 1032727, 1032727, 2065455, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)소르바스 유기농올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, null, 2, 36, 12, 24, 0, 0, 0, 12, 12, 0, 12, 0, 12, 0, 0, 0, 12, 0, 16, 16, 120, 24, 0, 0], "a": [null, null, null, null, null, null, null, 25636, 461454, 153818, 307636, 0, 0, 0, 153818, 153818, 0, 153818, 0, 153818, 0, 0, 0, 153818, 0, 205091, 196727, 1287270, 257455, 0, 0], "c": [6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 6200, 5964, 5964, 5964, 5804, 5804, 5804, 5804, 5920, 6008, 6008, 6008], "cn": "소르바스유기농올리브유500ml"}, "(스페인No.1)에스파뇰라 스프레이포도씨유200ml(벌크)": {"q": [300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [1400455, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2588, 2654, 2654, 2654, 2654, 2654, 2737, 2737, 2778, 3016, 3016, 3016, 3016, 3016, 3025, 3025, 3025, 3025, 3137], "cn": "에스파뇰라스프레이포도씨유200ml"}, "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,올리브,포도)-상하,고급쇼핑백": {"q": [192, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [3425455, 0, 0, 0, 0, 0, 0, 1090909, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(화이트,오히블랑카)(벌크)": {"q": [20, 0, 0, 0, 0, 20, 20, 0, 20, 0, 20, 0, 0, 20, 0, 0, 0, 20, 40, 0, 0, 0, 0, 20, 0, 24, 0, 8, 8, 0, 0], "a": [285455, 0, 0, 0, 0, 285455, 301818, 0, 301818, 0, 301818, 0, 0, 301818, 0, 0, 0, 301818, 603636, 0, 0, 0, 0, 301818, 0, 362182, 0, 104102, 104102, 0, 0], "c": [7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7455, 7879, 7879, 7251, 7515, 7515, 7515, 7515, 7515, 7515, 7312], "cn": "에스파뇰라프리미엄올리브유오히블랑카500ml"}, "(스페인직수입)소르바스 해바라기유500ml(벌크)": {"q": [null, null, null, null, null, null, null, 14, 24, 0, 0, 0, 0, 12, 0, 0, 12, 0, 12, 0, 12, 12, 0, 12, 24, 36, 12, 0, 0, 24, 12], "a": [null, null, null, null, null, null, null, 62364, 106909, 0, 0, 0, 0, 53455, 0, 0, 53455, 0, 53455, 0, 53455, 53455, 0, 53455, 106910, 160365, 53455, 0, 0, 102546, 51273], "c": [1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 1982, 2195, 2195, 2195, 2195, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2297, 2578, 2578, 2560, 2560], "cn": "소르바스해바라기유500ml"}, "(스페인직수입)포스티보나 꿀국화차20티1P": {"q": [null, null, null, null, null, null, null, null, 2, 1, 13, 30, 50, 20, 40, 30, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, 7091, 3545, 46091, 106365, 177275, 70910, 141820, 106365, 70910, 35455, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230], "cn": "포스티보나꿀국화차20티(신형)"}, "(스페인직수입)소르바스 포도씨유500ml(벌크)": {"q": [null, null, null, null, null, null, null, 14, 0, 0, 0, 24, 0, 0, 12, 0, 12, 0, 0, 12, 0, 12, 0, 0, 24, 48, 6, 12, 0, 0, 36], "a": [null, null, null, null, null, null, null, 101818, 0, 0, 0, 174546, 0, 0, 87273, 0, 87273, 0, 0, 87273, 0, 87273, 0, 0, 174545, 349091, 43636, 85953, 0, 0, 257859], "c": [2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 2868, 3053, 3053, 3053, 3053, 3053, 3122, 3122, 3122, 3230, 3230, 3230, 3230], "cn": "소르바스포도씨유500ml"}, "에스파뇰라2종(올리브,발사믹식초)": {"q": [null, null, null, null, null, 10, 20, 120, 0, 40, 10, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 157273, 314546, 2061818, 0, 687273, 171818, 0, 171818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)소르바스 올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, null, null, 26, 0, 12, 24, 12, 0, 24, 12, 12, 12, 12, 0, 0, 0, 12, 12, 10, 10, 0, 0, 12, 0, 4], "a": [null, null, null, null, null, null, null, null, 316728, 0, 146182, 292364, 146182, 0, 292364, 146182, 146182, 146182, 146182, 0, 0, 0, 146182, 146182, 121818, 121818, 0, 0, 146182, 0, 48727], "c": [6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 6327, 4882, 4882, 4882, 4882, 4882, 4882, 4882, 4882, 4938, 4938, 4938, 4938, 4943, 4943, 4943, 5042], "cn": "소르바스올리브유500ml"}, "(스페인직수입)포스티보나 꿀루이보스20티1P": {"q": [null, null, null, null, null, null, null, null, null, 2, 16, 10, 40, 20, 40, 30, 20, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, 8364, 66909, 41818, 167272, 83636, 167272, 125454, 83636, 0, 41818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 스프레이200ml(바베큐맛올리브유)(벌크)": {"q": [null, null, null, null, null, null, null, 4, 62, 0, 0, 0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 32364, 501637, 0, 0, 0, 970910, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3941, 4006, 4006, 3934, 3965, 3965, 3965, 3965, 3314, 3543, 3543, 3579, 3579, 3818, 3752, 3752, 3752, 3745, 3745], "cn": "에스파뇰라스프레이올리브유200ml"}, "(스페인직수입)포스티보나 꿀민트20티1P": {"q": [null, null, null, null, null, null, null, null, 2, 4, 4, 22, 10, 30, 50, 20, 20, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, 7636, 15273, 15272, 84000, 38182, 114546, 190910, 76364, 76364, 38182, 38182, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 스프레이유기농올리브유200ml(벌크)": {"q": [180, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [967908, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4098, 4168, 4054, 4054, 4054, 4054, 4054, 3674, 3674, 3430, 3430, 3430, 3430, 3430, 3797, 3797, 3797, 3797, 3797, 3797], "cn": "에스파뇰라스프레이유기농올리브유200ml"}, "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,포도,현미)-상하,고급쇼핑백": {"q": [null, null, null, null, null, null, null, 168, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 2733818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "에스파뇰라3종(유기농올리브2P,발사믹식초)": {"q": [null, null, null, null, null, 6, 6, 114, 0, 0, 6, 0, 6, 0, 6, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 157636, 157636, 3471818, 0, 0, 182727, 0, 182727, 0, 182727, 365455, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 꿀홍차20티1P": {"q": [null, null, null, null, null, null, null, null, 4, 11, 16, 30, 30, 10, 10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, 14910, 41000, 59637, 111819, 111818, 37273, 37273, 37273, 37273, 37273, 37273, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 올리브열매360g(허브맛,씨있음,그린)(벌크)": {"q": [null, null, null, null, null, null, null, 26, 0, 24, 24, 0, 0, 0, 24, 24, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 78000, 0, 72000, 72000, 0, 0, 0, 72000, 72000, 0, 0, 0, 0, 0, 0, 72000, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 스프레이지중해요리유200ml(벌크)": {"q": [120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [489272, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 프리미엄올리브유500ml(실버,베라사테기)(벌크)": {"q": [null, null, null, null, null, null, 2, 20, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 20, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, 32364, 323636, 0, 0, 0, 0, 0, 647272, 0, 0, 0, 0, 0, 323636, 0, 323636, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722, 7722], "cn": "에스파뇰라프리미엄올리브유베라사테기500ml"}, "(스페인직수입)포스티보나 올리브열매360g(파프리카맛,씨있음,레드)(벌크)": {"q": [null, null, null, null, null, null, null, 26, 24, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 78000, 72000, 0, 0, 0, 72000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72000, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(지구No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)": {"q": [null, null, null, null, null, null, null, 2, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 8000, 384000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1710, 1878, 1878, 1871, 1871, 1871, 1871, 1796, 1796, 1796, 1796, 1884, 1884, 1884, 1919, 1957, 1957, 1957, 1957, 1957], "cn": "킹프리미엄현미유500ml"}, "(스페인No.1)에스파뇰라2종(유기농올리브,포도)": {"q": [null, null, null, null, null, null, null, 30, 0, 10, 0, 20, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 589091, 0, 196364, 0, 392728, 589091, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라2종(올리브2P)": {"q": [null, null, null, null, null, null, null, 30, 0, 10, 0, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 739091, 0, 246364, 0, 470910, 470910, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 그린홀올리브열매350g(씨있음)(벌크)": {"q": [null, null, null, null, null, null, 2, 24, 0, 0, 24, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, 5091, 61091, 0, 0, 61091, 0, 0, 61091, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 마일드올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, 2, 12, 0, 12, 0, 12, 0, 0, 0, 0, 12, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, 25273, 151636, 0, 151636, 0, 151636, 0, 0, 0, 0, 151636, 0, 303272, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6907, 6027, 6027, 6027, 6027, 5628, 5196, 5196, 5196, 5196, 5291, 5511, 5511, 5511, 5511, 5612, 5612, 5612], "cn": "에스파뇰라올리브유500ml"}, "(스페인No.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,트러플)-상하,고급쇼핑백": {"q": [null, null, null, null, null, 12, 12, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 246545, 246545, 999272, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라2종(마일드올리브2P)": {"q": [null, null, null, null, null, null, null, 30, 0, 10, 0, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 741818, 0, 247273, 0, 476364, 238182, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 스프레이200ml(기오일)(벌크)": {"q": [null, null, null, null, null, 2, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 15091, 475363, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)소르바스2종(올리브,포도)": {"q": [null, null, null, null, null, null, null, 22, 0, 10, 0, 20, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 436000, 0, 198182, 0, 396364, 198182, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라4종(포도2P,해바2P)": {"q": [null, 5, 5, 0, 0, 5, 0, 20, 0, 0, 0, 0, 10, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, 103182, 103182, 0, 0, 103182, 0, 427273, 0, 0, 0, 0, 213636, 320454, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)소르바스3종(올리브,포도,해바)": {"q": [null, null, null, null, null, null, null, 26, 6, 0, 0, 12, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 626364, 144545, 0, 0, 289091, 289091, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인NO.1)에스파뇰라3종(올리브3P)": {"q": [null, null, null, null, null, null, null, 36, 0, 6, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 1318909, 0, 219818, 0, 0, 439636, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라3종(올리브2P,해바)": {"q": [null, null, null, null, null, null, null, 36, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 1034182, 0, 0, 0, 0, 172364, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)소르바스2종(올리브,해바)": {"q": [null, null, null, null, null, null, null, 22, 0, 0, 0, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 380000, 0, 0, 0, 172727, 172727, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,트러플)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 12, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 250909, 501818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라2종(포도2P)": {"q": [null, null, null, null, null, 10, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, 135455, 0, 270909, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 그린피티드올리브열매350g(씨없음)(벌크)": {"q": [null, null, null, null, null, null, 2, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, 5091, 61091, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인NO.1)에스파뇰라 스프레이3종(아보카도,유기농올리브,현미)-상하,고급쇼핑백": {"q": [null, null, null, null, null, null, null, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, 432000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스티로폼)에스파뇰라2종(올리브,발사믹식초)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, 343636, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인직수입)포스티보나 꿀캐모마일차20티1P": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 35455, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(트레이)에스파뇰라2종(올리브,발사믹식초)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 171818, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}}, "color": "#2563eb", "bg": "#f5f6f8"}, "컬리": {"months": ["2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"], "skus": ["(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(화이트)(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(아보카도오일)(벌크)", "(세계No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)", "(세계No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)", "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(레드)(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(올리브유)(벌크)", "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(화이트)(벌크)", "(스페인직수입)포스티보나 프리미엄올리브유500ml(벌크)", "(스페인No.1)에스파뇰라 스프레이200ml(에어프라이어전용오일)(벌크)", "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(레드)(벌크)", "(지구No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)", "(지구No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)", "(스페인직수입)포스티보나 유기농올리브유250ml(벌크)", "(스페인No.1)에스파뇰라 스프레이400ml(아보카도오일)(벌크)", "(스페인No.1)에스파뇰라 스프레이400ml(올리브유)(벌크)", "(스페인No.1)에스파뇰라 스프레이400ml(유기농올리브유)(벌크)", "(스페인No.1)에스파뇰라 스프레이3종(아보카도,올리브유블랙,포도)", "(스페인No.1)에스파뇰라 스프레이400ml(현미유)(벌크)", "(스페인No.1)에스파뇰라 스프레이3종(아보카도,올리브유블랙,포도)-상하,고급쇼핑백", "베르데 에스메랄다 프리미엄올리브유500ml(그린,피쿠알)1P", "베르데 에스메랄다 프리미엄유기농올리브유500ml(블루,피쿠알)1P", "베르데 에스메랄다 프리미엄올리브유500ml(레드,로얄)1P", "C/T 수입지(발사믹식초250ml벌크)(벌집간지 O-43-1)", "베르데 에스메랄다 프리미엄올리브유25ml3종(미니어쳐3P)", "(이태리,모데나)포스티보나 프리미엄발사믹식초250ml2종(레드,화이트)", "스티커(소)(20칸,42칸,물티슈) 택배발송", "케이스(에스메랄다100ml3P)(베르데)"], "data": {"(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(화이트)(벌크)": {"q": [null, null, 182, 1260, 243, 612, 0, 0, 0, 0, 0, 0, 0, 1752, 4140, 2040, 1140, 2976, 1608, 1872, 2724, 3744, 4668, 3312, 4050], "a": [null, null, 972818, 6809727, 1313304, 3307581, 0, 0, 0, 0, 0, 0, 0, 10416436, 24614182, 12128729, 6777817, 17693671, 9560291, 11129892, 16195419, 22259779, 27753381, 19691345, 24079092], "c": [2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2693, 2962, 2873, 2873, 2851, 2813, 2813, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921, 2921], "cn": "포스티보나모데나발사믹식초화이트250ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(아보카도오일)(벌크)": {"q": [852, 1350, 1000, 750, 236, 500, 0, 500, 600, 1200, 700, 300, 1100, 400, 1050, 1550, 900, 1250, 1250, 3000, 8400, 5000, 100, 0, 0], "a": [5022978, 7251955, 5371818, 4028865, 1267749, 2685910, 0, 2685910, 3223092, 7090800, 4136365, 1772730, 6500000, 2363639, 6204548, 9159094, 5318184, 7386365, 7386366, 17727274, 49636364, 29545454, 590910, 0, 0], "c": [3180, 3180, 3180, 3180, 3180, 3180, 3180, 3133, 3133, 3133, 3312, 3312, 3312, 3312, 3282, 3402, 3402, 3474, 3474, 4672, 4605, 4605, 5619, 4817, 4817], "cn": "에스파뇰라스프레이아보카도오일200ml"}, "(세계No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)": {"q": [null, null, 276, 204, 504, 924, 912, 444, 624, 672, 528, 276, 564, 540, 816, 552, 492, 660, 672, 1044, 624, 924, 756, 576, 1488], "a": [null, null, 1354909, 1001454, 2474181, 4536000, 4477092, 2179636, 3063272, 3628800, 2851200, 1490400, 3045600, 2916000, 4406400, 2980800, 2656800, 3564000, 3628800, 5637600, 3369600, 4989600, 4082400, 3110400, 8035200], "c": [3199, 3199, 3199, 3199, 3199, 3199, 3527, 3527, 3513, 3513, 3513, 3513, 3353, 3353, 3353, 3353, 3516, 3516, 3516, 3582, 3636, 3636, 3636, 3636, 3636], "cn": "킹프리미엄현미유1000ml"}, "(세계No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)": {"q": [null, null, 240, 48, 744, 1032, 1008, 456, 504, 576, 384, 384, 360, 336, 528, 648, 192, 648, 768, 840, 888, 864, 840, 672, 936], "a": [null, null, 702110, 140422, 2176539, 3019069, 2948860, 1334008, 1474430, 1853568, 1235781, 1235780, 1158545, 1081307, 1699200, 2085382, 617890, 2085381, 2471563, 2703272, 2857744, 2780508, 2703270, 2162615, 3012218], "c": [1710, 1710, 1710, 1710, 1710, 1710, 1878, 1878, 1871, 1871, 1871, 1871, 1796, 1796, 1796, 1796, 1884, 1884, 1884, 1919, 1957, 1957, 1957, 1957, 1957], "cn": "킹프리미엄현미유500ml"}, "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(레드)(벌크)": {"q": [null, null, 242, 96, 240, 432, 192, 384, 528, 480, 192, 144, 384, 336, 384, 288, 288, 384, 528, 624, 1008, 864, 1296, 624, 192], "a": [null, null, 773455, 309382, 773455, 1392219, 618764, 1237528, 1701601, 1701600, 680728, 510546, 1361456, 1191274, 1361456, 1021092, 1021092, 1361456, 1872001, 2212366, 3573820, 3063275, 4594909, 2212365, 680728], "c": [2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2162, 2314, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245, 2245], "cn": "포스티보나글레이즈레드250ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(올리브유)(벌크)": {"q": [402, 650, 550, 150, 100, 600, 250, 550, 200, 250, 150, 100, 350, 150, 400, 200, 100, 250, 350, 400, 500, 650, 700, 250, 50], "a": [2581818, 3872953, 3227499, 880227, 586818, 3520908, 1467045, 3227499, 1173636, 1586477, 968319, 645546, 2259411, 968319, 2582182, 1291090, 645546, 1613864, 2259411, 2582183, 3227728, 4196046, 4518817, 1613863, 322773], "c": [3979, 3979, 3979, 3979, 3979, 3979, 3941, 4006, 4006, 3934, 3965, 3965, 3965, 3965, 3314, 3543, 3543, 3579, 3579, 3818, 3752, 3752, 3752, 3745, 3745], "cn": "에스파뇰라스프레이올리브유200ml"}, "(이탈리아직수입)포스티보나 발사믹글레이즈250ml(화이트)(벌크)": {"q": [null, null, 338, 624, 96, 48, 0, 48, 96, 480, 384, 96, 192, 336, 96, 288, 96, 240, 480, 528, 384, 192, 672, 816, 150], "a": [null, null, 1082837, 2010982, 309382, 154691, 0, 154691, 309382, 1701600, 1361455, 340364, 680728, 1191274, 340364, 1021092, 340364, 850910, 1701820, 1872002, 1361455, 680728, 2382546, 2893091, 531818], "c": [1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 1934, 2091, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029, 2029], "cn": "포스티보나글레이즈화이트250ml"}, "(스페인직수입)포스티보나 프리미엄올리브유500ml(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, 4, 336, 12, 0, 72, 240, 264, 264, 504, 228, 420, 0, 36], "a": [null, null, null, null, null, null, null, null, null, null, null, null, 0, 5479854, 195709, 0, 1174254, 3914182, 4305598, 4305598, 8219782, 3718471, 6849816, 0, 587127], "c": [8319, 8319, 8319, 8319, 8319, 8319, 8319, 8319, 8319, 6737, 6737, 6737, 6492, 6492, 6461, 5750, 5750, 6075, 6075, 6075, 6075, 6697, 6697, 6699, 6699], "cn": "포스티보나프리미엄올리브유500ml"}, "(스페인No.1)에스파뇰라 스프레이200ml(에어프라이어전용오일)(벌크)": {"q": [402, 150, 100, 50, 0, 0, 0, 500, 0, 50, 0, 0, 0, 0, 0, 100, 50, 0, 0, 0, 0, 0, 0, 0, 0], "a": [2145454, 731454, 487636, 243818, 0, 0, 0, 2438182, 0, 268200, 0, 0, 0, 0, 0, 536364, 268182, 0, 0, 0, 0, 0, 0, 0, 0], "c": [2620, 2620, 2620, 2620, 2620, 2620, 2620, 2664, 2664, 2664, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2682, 2718, 2718, 2718, 2718, 2718, 2834], "cn": "에스파뇰라스프레이에어프라이어200ml"}, "(이탈리아직수입)포스티보나 모데나프리미엄발사믹식초250ml(레드)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, 4, 312, 0, 0, 0, 0, 12, 120, 144, 192, 204, 132, 138], "a": [null, null, null, null, null, null, null, null, null, null, null, null, 0, 1854982, 0, 0, 0, 0, 71345, 713452, 856144, 1141526, 1212870, 784798, 820470], "c": [3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3665, 3741, 3741, 3712, 3813, 3813, 3813, 3813, 4050, 4050, 4050, 4050, 4050, 4050, 4050, 4050], "cn": "포스티보나모데나발사믹식초레드250ml"}, "(지구No.1)킹 프리미엄현미유1L(12,000ppm)(벌크)": {"q": [null, 228, 828, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, 1119273, 4064728, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [3199, 3199, 3199, 3199, 3199, 3199, 3527, 3527, 3513, 3513, 3513, 3513, 3353, 3353, 3353, 3353, 3516, 3516, 3516, 3582, 3636, 3636, 3636, 3636, 3636], "cn": "킹프리미엄현미유1000ml"}, "(지구No.1)킹 프리미엄현미유500ml(12,000ppm)(벌크)": {"q": [null, 288, 696, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, 842532, 2036117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [1710, 1710, 1710, 1710, 1710, 1710, 1878, 1878, 1871, 1871, 1871, 1871, 1796, 1796, 1796, 1796, 1884, 1884, 1884, 1919, 1957, 1957, 1957, 1957, 1957], "cn": "킹프리미엄현미유500ml"}, "(스페인직수입)포스티보나 유기농올리브유250ml(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2, 720, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 5458909, 0], "c": [3796, 3796, 3796, 3796, 3796, 3796, 3796, 3796, 3796, 3796, 3796, 3796, 3662, 3662, 3662, 3569, 3569, 3797, 3840, 3840, 3840, 3840, 3840, 3840, 3840], "cn": "포스티보나유기농올리브유250ml"}, "(스페인No.1)에스파뇰라 스프레이400ml(아보카도오일)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 61, 600, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 589091, 5890911, 0], "c": [6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6332, 6254, 6254, 6254, 7868, 7868, 7868, 7868, 8180], "cn": "에스파뇰라스프레이아보카도오일400ml"}, "(스페인No.1)에스파뇰라 스프레이400ml(올리브유)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 61, 360, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 572727, 3436362, 0], "c": [6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6198, 6121, 6121, 6121, 6055, 6055, 6055, 6055, 6294], "cn": "에스파뇰라스프레이올리브유400ml"}, "(스페인No.1)에스파뇰라 스프레이400ml(유기농올리브유)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 61, 300, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 621818, 3109092, 0], "c": [6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6182, 6426], "cn": "에스파뇰라스프레이유기농올리브유400ml"}, "(스페인No.1)에스파뇰라 스프레이3종(아보카도,올리브유블랙,포도)": {"q": [null, null, 360, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, 6605019, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(스페인No.1)에스파뇰라 스프레이400ml(현미유)(벌크)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, 240, 104], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 1832726, 794181], "c": [4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4383, 4225, 4225, 4225, 4225, 4392], "cn": "에스파뇰라스프레이현미유400ml"}, "(스페인No.1)에스파뇰라 스프레이3종(아보카도,올리브유블랙,포도)-상하,고급쇼핑백": {"q": [null, 72, 192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, 1321003, 3522675, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "베르데 에스메랄다 프리미엄올리브유500ml(그린,피쿠알)1P": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 204, 48], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 9402544, 2212363], "c": [35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519, 35519], "cn": "베르데에스메랄다피쿠알500ml"}, "베르데 에스메랄다 프리미엄유기농올리브유500ml(블루,피쿠알)1P": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 78, 78], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3999272, 3999271], "c": [39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057, 39057], "cn": "베르데에스메랄다유기농피쿠알500ml"}, "베르데 에스메랄다 프리미엄올리브유500ml(레드,로얄)1P": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 102, 24], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 5007271, 1178181], "c": [38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496, 38496], "cn": "베르데에스메랄다로얄500ml"}, "C/T 수입지(발사믹식초250ml벌크)(벌집간지 O-43-1)": {"q": [null, null, null, null, 18, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "베르데 에스메랄다 프리미엄올리브유25ml3종(미니어쳐3P)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 3, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "(이태리,모데나)포스티보나 프리미엄발사믹식초250ml2종(레드,화이트)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "스티커(소)(20칸,42칸,물티슈) 택배발송": {"q": [null, null, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "a": [null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}, "케이스(에스메랄다100ml3P)(베르데)": {"q": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, 0, 0, 0], "a": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 0, 0], "c": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "cn": ""}}, "color": "#5f0080", "bg": "#f7f5f8"}};
+var PLATS=Object.keys(ALL), PLAT=PLATS[0], CN='#1f6b3a';
+var TMETRICS=[['q','수량'],['a','공급액']];
+var metric='q', tmetric='q';
+
+var STORE={};
+PLATS.forEach(function(p){ try{ STORE[p]=JSON.parse(localStorage.getItem('perf_'+p)||'{}'); }catch(e){ STORE[p]={}; } });
+function save(){ try{ localStorage.setItem('perf_'+PLAT,JSON.stringify(STORE[PLAT])); }catch(e){} }
+function P(p){ return ALL[p||PLAT]; }
+function ST(p){ return STORE[p||PLAT]; }
+
+/* ── 직접 추가한 SKU ── { 플랫폼: [SKU명, ...] } */
+var CUSTOM={};
+try{ CUSTOM=JSON.parse(localStorage.getItem('custom_sku')||'{}')||{}; }catch(e){ CUSTOM={}; }
+function saveCustom(){ try{ localStorage.setItem('custom_sku',JSON.stringify(CUSTOM)); }catch(e){}
+  if(typeof pushSetting==='function') pushSetting('custom_sku',JSON.stringify(CUSTOM)); }
+function isCustom(k,p){ return (CUSTOM[p||PLAT]||[]).indexOf(k)>=0; }
+/* 추가한 SKU를 데이터셋에 끼워넣는다 — 기존 실적은 없고 입력값만 쌓이는 SKU */
+function mountCustom(){
+  PLATS.forEach(function(p){
+    var D=ALL[p], n=D.months.length;
+    (CUSTOM[p]||[]).forEach(function(k){
+      if(D.skus.indexOf(k)<0) D.skus.push(k);
+      if(!D.data[k]){
+        var q=[],a=[],c=[];
+        for(var i=0;i<n;i++){ q.push(null); a.push(null); c.push(null); }
+        D.data[k]={q:q,a:a,c:c,cn:0};
+      }
+    });
+  });
+}
+function addSku(){
+  var name=prompt('추가할 SKU 이름을 입력하세요.\n(브랜드가 자동으로 잡히도록 이름 앞부분에 브랜드명을 넣어주세요)');
+  if(name==null) return;
+  name=name.trim(); if(!name) return;
+  if(P().skus.indexOf(name)>=0){ alert('이미 있는 SKU입니다.'); return; }
+  if(!CUSTOM[PLAT]) CUSTOM[PLAT]=[];
+  CUSTOM[PLAT].push(name); saveCustom(); mountCustom();
+  BR='전체';
+  var qb=document.getElementById('q'); if(qb) qb.value='';
+  render();
+  alert('"'+name+'" 추가 완료 — 브랜드: '+BRAND(name)+
+        '\n카드의 입력칸에서 월별 수량·공급가·원가를 넣으면 광고비 합산에도 자동으로 포함됩니다.');
+}
+function removeCustomSku(k){
+  var arr=CUSTOM[PLAT]||[];
+  var i=arr.indexOf(k); if(i<0) return;
+  askPw('추가한 SKU 삭제',
+    '<span class="pwsku">'+esc(k)+'</span>직접 추가한 SKU라 목록과 입력값이 완전히 지워집니다.',
+    function(){
+      arr.splice(i,1); saveCustom();
+      var D=P(); var j=D.skus.indexOf(k);
+      if(j>=0) D.skus.splice(j,1);
+      delete D.data[k];
+      var S=ST(); if(S[k]){ delete S[k]; save(); }
+      render();
+    });
+}
+
+function nextMonths(p,n){
+  var b=P(p).months, last=b[b.length-1].split('-'), y=+last[0], m=+last[1], out=[];
+  for(var i=0;i<n;i++){ m++; if(m>12){m=1;y++;} out.push(y+'-'+('0'+m).slice(-2)); }
+  return out;
+}
+function entered(p){ var s={},S=ST(p); for(var k in S) for(var mk in S[k]) s[mk]=1; return Object.keys(s).sort(); }
+function MONTHS(p){
+  var b=P(p).months, ent=entered(p), need=3;
+  if(ent.length){ var ex=nextMonths(p,48), li=ex.indexOf(ent[ent.length-1]); need=Math.max(3,li+2); }
+  return b.concat(nextMonths(p,need));
+}
+function lab(mk){ var x=mk.split('-'); return x[0].slice(2)+'.'+(+x[1]); }
+function nf(n){ return (n==null||isNaN(n))?'-':Math.round(n).toLocaleString('ko-KR'); }
+var VATR=10, LOGR=2;
+/* ── 브랜드 ── */
+var BRAND_LIST=['에스파뇰라','포스티보나','소르바스','킹','베르데'];
+function BRAND(k){
+  var n=String(k).replace(/^\([^)]*\)/,'').trim();
+  for(var i=0;i<BRAND_LIST.length;i++){ if(n.indexOf(BRAND_LIST[i])===0) return BRAND_LIST[i]; }
+  return '기타';   /* 사은품·부자재 등 */
+}
+function BRANDS(p){
+  var seen={}, out=[];
+  P(p).skus.forEach(function(k){ var b=BRAND(k); if(!seen[b]){seen[b]=1; out.push(b);} });
+  out.sort(function(a,b){
+    var ia=BRAND_LIST.indexOf(a), ib=BRAND_LIST.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib); });
+  return ['전체'].concat(out);
+}
+var BR='전체';
+function inBrand(k){ return BR==='전체' || BRAND(k)===BR; }
+
+/* ── SKU 삭제(숨김) — 비밀번호 1226 ── { 플랫폼: [SKU명, ...] } */
+var DEL_PW='1226';
+var HIDDEN={};
+try{ HIDDEN=JSON.parse(localStorage.getItem('hidden_sku')||'{}')||{}; }catch(e){ HIDDEN={}; }
+function hiddenList(p){ return HIDDEN[p]||[]; }
+function isHidden(k){ return hiddenList(PLAT).indexOf(k)>=0; }
+function saveHidden(){ try{ localStorage.setItem('hidden_sku',JSON.stringify(HIDDEN)); }catch(e){}
+  if(typeof pushSetting==='function') pushSetting('hidden_sku',JSON.stringify(HIDDEN)); }
+/* 브라우저가 prompt/confirm 을 막아도 동작하도록 페이지 안에 직접 그리는 확인창 */
+function askPw(title, detail, onOk){
+  var back=document.createElement('div'); back.className='pwback';
+  back.innerHTML='<div class="pwbox"><h3>'+esc(title)+'</h3>'+
+    '<div class="pwd">'+detail+'</div>'+
+    '<input type="password" id="pwin" placeholder="비밀번호" autocomplete="off" inputmode="numeric">'+
+    '<div class="pwerr" id="pwerr" style="display:none">비밀번호가 올바르지 않습니다.</div>'+
+    '<div class="pwbtn"><button id="pwcancel">취소</button>'+
+    '<button id="pwok" class="danger">삭제</button></div></div>';
+  document.body.appendChild(back);
+  var inp=back.querySelector('#pwin');
+  function close(){ back.remove(); }
+  function submit(){
+    if(inp.value.trim()!==DEL_PW){
+      back.querySelector('#pwerr').style.display='';
+      inp.value=''; inp.focus(); return; }
+    close(); onOk();
+  }
+  back.querySelector('#pwcancel').onclick=close;
+  back.querySelector('#pwok').onclick=submit;
+  back.onclick=function(e){ if(e.target===back) close(); };
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter') submit();
+    if(e.key==='Escape') close(); });
+  setTimeout(function(){ inp.focus(); },30);
+}
+/* 숨김 — 목록에서만 감추고 입력해둔 실적은 그대로 보관한다 (되돌리면 값도 그대로 살아남) */
+function hideSku(k){
+  askPw('SKU 숨기기',
+    '<b>['+esc(PLAT)+']</b> 아래 SKU를 목록에서 숨깁니다.<br><span class="pwsku">'+esc(k)+'</span>'+
+    '입력해둔 실적은 <b>지워지지 않고 그대로 보관</b>돼요. 아래 숨김 목록에서 언제든 되돌릴 수 있습니다.',
+    function(){
+      if(!HIDDEN[PLAT]) HIDDEN[PLAT]=[];
+      if(HIDDEN[PLAT].indexOf(k)<0) HIDDEN[PLAT].push(k);
+      saveHidden();
+      render();
+    });
+}
+/* 하나만 되돌리기 */
+function unhideSku(k){
+  var arr=HIDDEN[PLAT]||[], i=arr.indexOf(k);
+  if(i<0) return;
+  arr.splice(i,1); saveHidden(); render();
+}
+/* 전부 되돌리기 */
+function restoreHidden(){
+  var n=hiddenList(PLAT).length; if(!n) return;
+  HIDDEN[PLAT]=[]; saveHidden(); render();
+}
+
+/* ── 로켓배송 등록 여부 (쿠팡 전용) ── { SKU: true }  — 등록된 SKU만 쿠팡 광고가 붙는다 */
+var ROCKET={};
+try{ ROCKET=JSON.parse(localStorage.getItem('rocket_sku')||'{}')||{}; }catch(e){ ROCKET={}; }
+function isRocket(k){ return !!ROCKET[k]; }
+function setRocket(k,v){
+  if(v) ROCKET[k]=true; else delete ROCKET[k];
+  try{ localStorage.setItem('rocket_sku',JSON.stringify(ROCKET)); }catch(e){}
+  if(typeof pushSetting==='function') pushSetting('rocket_sku',JSON.stringify(ROCKET));
+}
+
+/* ── 브랜드별 월 광고비 (쿠팡 전용) ── { 쿠팡: { 브랜드: { 'YYYY-MM': 금액 } } } */
+var AD_FROM='2025-01';                 /* 광고비 입력 시작월 */
+var ADYEAR=null;                       /* 광고비 표에서 보고 있는 연도 탭 */
+var ADSPEND={};
+try{ ADSPEND=JSON.parse(localStorage.getItem('ad_spend')||'{}')||{}; }catch(e){ ADSPEND={}; }
+function adSpend(p,b,mk){
+  var m=ADSPEND[p]&&ADSPEND[p][b]; var v=m&&m[mk];
+  return (v==null||isNaN(v))?0:+v;
+}
+function setAdSpend(p,b,mk,v){
+  if(!ADSPEND[p]) ADSPEND[p]={};
+  if(!ADSPEND[p][b]) ADSPEND[p][b]={};
+  if(!v) delete ADSPEND[p][b][mk]; else ADSPEND[p][b][mk]=v;
+  try{ localStorage.setItem('ad_spend',JSON.stringify(ADSPEND)); }catch(e){}
+  if(typeof pushAd==='function') pushAd(p,b,mk,v);
+}
+/* 그 달 그 브랜드의 총 판매수량 (광고비를 나눌 분모)
+   쿠팡은 로켓배송 등록 SKU만 광고가 붙으므로, 그 SKU들의 판매수량만 더한다.
+   (로켓 미등록 SKU는 애초에 광고 노출이 없어 분모에서 빼야 개당 광고비가 정확해진다) */
+function brandQty(p,b,mk){
+  var s=0;
+  P(p).skus.forEach(function(k){
+    if(BRAND(k)!==b || isHidden(k)) return;
+    if(p==='쿠팡' && !isRocket(k)) return;
+    var r=rawRec(p,k,mk); if(r&&r.q) s+=r.q; });
+  return s;
+}
+/* 개당 광고비 = 브랜드 월광고비 ÷ 로켓배송 등록 SKU들의 월수량 (쿠팡만)
+   로켓 미등록 SKU는 광고가 집행되지 않으므로 항상 0원 */
+function adPerUnit(p,k,mk){
+  if(p!=='쿠팡') return 0;
+  if(!isRocket(k)) return 0;
+  var b=BRAND(k), sp=adSpend(p,b,mk); if(!sp) return 0;
+  var q=brandQty(p,b,mk); return q?sp/q:0;
+}
+/* 광고비 입력 대상월: AD_FROM 이후 전체 (앞으로 12개월까지 미리 넣을 수 있게) */
+function adMonths(p){
+  return P(p).months.concat(nextMonths(p,12)).filter(function(mk){ return mk>=AD_FROM; });
+}
+function adYears(p){
+  var ys=[], seen={};
+  adMonths(p).forEach(function(mk){ var y=mk.slice(0,4); if(!seen[y]){seen[y]=1; ys.push(y);} });
+  return ys;
+}
+/* 조정원가 = 원가 × (1 + 부가세% + 물류비%) */
+function AC(c){ return (c==null)?null:c*(1+VATR/100+LOGR/100); }
+function adjTxt(){ return '원가×(1+'+VATR+'%+'+LOGR+'%)'; }
+/* 개당 공급가(평균단가) — 입력값은 VAT 제외이므로 부가세를 다시 붙여 실제 단가로 복원 */
+function UP(r){ var u=(r&&r.q)?r.a/r.q:null; return (u==null)?null:u*(1+VATR/100); }
+function upFrom(a,q){ return q?(a/q)*(1+VATR/100):null; }
+/* 레코드에 붙은 개당 광고비 (rec/totRec 에서 채워짐) */
+function ADC(r){ return (r&&r.ad)?r.ad:0; }
+/* 마진액 = 평균단가(VAT포함) − 조정원가 − 개당광고비 */
+function MG(u,ac,r){ return (u!=null&&ac!=null)?(u-ac-ADC(r)):null; }
+function pf(n){ return (n==null||isNaN(n))?'-':(n*100).toFixed(1)+'%'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* 광고비를 붙이지 않은 원본 레코드 (brandQty 가 이걸 써서 순환 참조를 막음) */
+function rawRec(p,k,mk){
+  var S=ST(p), e=S[k]&&S[k][mk], D=P(p), bi=D.months.indexOf(mk);
+  if(e) return {q:e.q,a:e.a,c:e.c,src:(bi>=0?'정정 입력':'입력')};
+  if(bi>=0){ var d=D.data[k]; if(!d||d.q[bi]==null) return null;
+    return {q:d.q[bi],a:d.a[bi],c:d.c[bi],src:'실적'}; }
+  return null;
+}
+function rec(p,k,mk){
+  var r=rawRec(p,k,mk); if(!r) return null;
+  r.ad=adPerUnit(p,k,mk);
+  return r;
+}
+function isEnt(r){ return !!r && (r.src==='입력'||r.src==='정정 입력'); }
+/* 입력/정정 가능 월: 기존 실적 전체 기간 + 앞으로 24개월 (모든 달을 고칠 수 있게) */
+function editMonths(p){
+  return P(p).months.concat(nextMonths(p,24));
+}
+function val(r,m){ if(!r) return null; m=m||metric;
+  if(m==='q') return r.q;
+  if(m==='a') return r.a;
+  if(m==='u') return UP(r);
+  if(m==='c') return AC(r.c);
+  if(m==='mg'){ if(r.cq!=null) return totMg(r);
+    return MG(UP(r), AC(r.c), r); }
+  var u=UP(r), a2=AC(r.c), mg=MG(u,a2,r);
+  return (u&&mg!=null&&u!==0)?mg/u:null;
+}
+/* 선택된 브랜드 탭 범위의 합계 */
+function totRec(p,mk){
+  var q=0,a=0,cw=0,cq=0,ca=0,aw=0,any=false;
+  P(p).skus.forEach(function(k){
+    if(isHidden(k)||!inBrand(k)) return;
+    var r=rec(p,k,mk); if(!r)return; any=true;
+    q+=r.q||0; a+=r.a||0;
+    if(r.c!=null){ cw+=r.c*(r.q||0); cq+=r.q||0; ca+=r.a||0;
+      aw+=(r.ad||0)*(r.q||0); } });
+  /* 광고비는 원가가 있는 SKU들의 수량 가중평균 */
+  return any?{q:q,a:a,c:cq?cw/cq:null,cq:cq,ca:ca,ad:cq?aw/cq:0,src:'합계'}:null;
+}
+/* 전체합계 개당 마진액 = (원가 보유 SKU의 개당 공급가, VAT포함) − (가중평균 조정원가) − 개당광고비 */
+function totMg(r){ if(!r||r.c==null||!r.cq) return null;
+  return MG(upFrom(r.ca, r.cq), AC(r.c), r); }
+
+function niceMax(m){ if(m<=0)return 10; var e=Math.pow(10,Math.floor(Math.log(m)/Math.LN10)),f=m/e;
+  var n=f<=1?1:f<=1.5?1.5:f<=2?2:f<=2.5?2.5:f<=3?3:f<=4?4:f<=5?5:f<=7.5?7.5:10; return n*e; }
+function chart(getR,big,m){
+  m=m||metric;
+  var C=P().color, MS=MONTHS(), N=MS.length, NB=P().months.length;
+  var W=760,H=big?320:200,ML=58,MR=12,MT=24,MB=26,iw=W-ML-MR,ih=H-MT-MB;
+  var rs=MS.map(function(mk){ return getR(mk); });
+  var vs=rs.map(function(r){ return val(r,m); });
+  var pos=vs.filter(function(v){return v!=null;}), isPct=(m==='m');
+  var mx=isPct?Math.max(.1,niceMax(Math.max.apply(null,pos.concat([.1])))):niceMax(Math.max.apply(null,pos.concat([1])));
+  var lo=Math.min.apply(null,pos.concat([0])), mn=lo<0?-niceMax(-lo):0;
+  var X=function(i){return ML+i*iw/(N-1);}, Y=function(v){return MT+ih-((v-mn)/(mx-mn))*ih;};
+  var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">';
+  var xb=X(NB-0.5);
+  s+='<rect x="'+ML+'" y="'+MT+'" width="'+(xb-ML)+'" height="'+ih+'" fill="'+C+'" opacity=".05"/>';
+  s+='<rect x="'+xb+'" y="'+MT+'" width="'+(W-MR-xb)+'" height="'+ih+'" fill="'+CN+'" opacity=".07"/>';
+  s+='<text x="'+((ML+xb)/2)+'" y="'+(MT-8)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#9aa2ad">기존 실적</text>';
+  s+='<text x="'+((xb+W-MR)/2)+'" y="'+(MT-8)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#5f9a77">입력 실적</text>';
+  for(var g=0;g<=4;g++){ var v=mn+(mx-mn)*g/4,y=Y(v);
+    s+='<line x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'" stroke="#e6e9ed"/>';
+    s+='<text x="'+(ML-6)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="9.5" fill="#999">'+(isPct?(v*100).toFixed(0)+'%':nf(v))+'</text>'; }
+  var step=N>26?3:2;
+  for(var i=0;i<N;i+=step) s+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#999">'+lab(MS[i])+'</text>';
+  var d='',st=false;
+  for(var i=0;i<NB;i++){ if(vs[i]==null) continue; d+=(st?'L':'M')+X(i).toFixed(1)+' '+Y(vs[i]).toFixed(1)+' '; st=true; }
+  if(st) s+='<path d="'+d+'" fill="none" stroke="'+C+'" stroke-width="2.2" stroke-linejoin="round"/>';
+  var li=-1; for(var i=NB-1;i>=0;i--) if(vs[i]!=null){li=i;break;}
+  var has=false; for(var i=NB;i<N;i++) if(vs[i]!=null){has=true;break;}
+  if(has){ var d2='',st2=false;
+    if(li>=0){ d2='M'+X(li).toFixed(1)+' '+Y(vs[li]).toFixed(1)+' '; st2=true; }
+    for(var i=NB;i<N;i++){ if(vs[i]==null) continue; d2+=(st2?'L':'M')+X(i).toFixed(1)+' '+Y(vs[i]).toFixed(1)+' '; st2=true; }
+    s+='<path d="'+d2+'" fill="none" stroke="'+CN+'" stroke-width="2.6" stroke-linejoin="round"/>'; }
+  for(var i=0;i<N;i++){ if(vs[i]==null) continue;
+    var isNew=(i>=NB)||isEnt(rs[i]), col=isNew?CN:C;
+    s+='<circle class="pt" data-mk="'+MS[i]+'" cx="'+X(i)+'" cy="'+Y(vs[i])+'" r="'+(isNew?5:3)+'" fill="'+col+'"'+(isNew?' stroke="#fff" stroke-width="1.5"':'')+'></circle>';
+    s+='<circle class="pt" data-mk="'+MS[i]+'" cx="'+X(i)+'" cy="'+Y(vs[i])+'" r="11" fill="transparent"></circle>'; }
+  return s+'</svg>';
+}
+function detTotal(mk,r){
+  if(!r) return '';
+  var u=UP(r), mg=totMg(r), adc=ADC(r);
+  var mr=(r.cq&&mg!=null)?mg/upFrom(r.ca,r.cq):null;
+  return '<span class="cl" data-cl="1">✕</span><b>'+lab(mk)+'월</b> <span style="color:#aaa;font-size:11px">전체 합계</span><br>'+
+   '<span class="k">판매수량</span>'+nf(r.q)+' 개<br>'+
+   '<span class="k">공급액</span><b>'+nf(r.a)+' 원</b><br>'+
+   '<span class="k">평균단가</span>'+nf(u)+' 원 <span style="color:#999;font-size:11px">(VAT '+VATR+'% 포함)</span>'+
+   (mg==null?'' :
+     '<br>'+(adc?'<span class="k">광고비</span>'+nf(adc)+' 원 <span style="color:#999;font-size:11px">(개당)</span><br>':'')+
+     '<span class="k">마진액</span>'+nf(mg)+' 원 <span style="color:#999;font-size:11px">(원가 있는 SKU 기준)</span>'+
+     '<br><span class="k">마진율</span><b>'+pf(mr)+'</b>');
+}
+function detHTML(mk,r){
+  if(!r) return '';
+  var u=UP(r), ac=AC(r.c), mg=MG(u,ac,r), mr=(u&&mg!=null&&u!==0)?mg/u:null, adc=ADC(r);
+  return '<span class="cl" data-cl="1">✕</span><b>'+lab(mk)+'월</b> <span style="color:#aaa;font-size:11px">'+r.src+'</span><br>'+
+   '<span class="k">판매수량</span>'+nf(r.q)+' 개<br><span class="k">공급액</span>'+nf(r.a)+' 원<br>'+
+   '<span class="k">평균단가</span>'+nf(u)+' 원 <span style="color:#999;font-size:11px">(VAT '+VATR+'% 포함)</span><br>'+
+   '<span class="k">원가</span>'+
+   (ac==null?'<span style="color:#a55">원가 미연결</span>'
+     :'<b>'+nf(ac)+' 원</b> <span style="color:#999;font-size:11px">(수입원가 '+nf(r.c)+' × '+
+       (1+VATR/100+LOGR/100).toFixed(2)+')</span>')+'<br>'+
+   (adc?'<span class="k">광고비</span>'+nf(adc)+' 원 <span style="color:#999;font-size:11px">(개당)</span><br>':'')+
+   '<span class="k">마진액</span>'+nf(mg)+' 원<br><span class="k">마진율</span><b>'+pf(mr)+'</b>';
+}
+
+function sum(a){var x=0;for(var i=0;i<a.length;i++)x+=(a[i]||0);return x;}
+function tot(k){ var e=ST()[k]||{}; return sum(P().data[k].q)+sum(Object.keys(e).map(function(m){return e[m].q;})); }
+function g6(k){ var q=P().data[k].q,n=q.length,p=0,c=0;
+  for(var i=n-12;i<n-6;i++)p+=(q[i]||0); for(var i=n-6;i<n;i++)c+=(q[i]||0);
+  return p===0?null:(c-p)/p*100; }
+function active(k){ var e=ST()[k]; return sum(P().data[k].q.slice(-12))>0 || (e&&Object.keys(e).length); }
+
+function updStat(){
+  var ent=entered(), n=0, S=ST(); for(var k in S) n+=Object.keys(S[k]).length;
+  var last=ent.length?ent[ent.length-1]:null, t=last?totRec(PLAT,last):null;
+  document.getElementById('stat').innerHTML= ent.length
+    ? PLAT+' · 입력 <b>'+n+'</b>건 · 최근 입력월 <b>'+lab(last)+'</b> — 수량 '+nf(t.q)+'개 · 공급가 '+nf(t.a)+'원 · 평균단가 '+nf(UP(t))+'원'+(t.c!=null?' · 원가 '+nf(t.c)+'원':'')+(ADC(t)?' · 평균 광고비 '+nf(ADC(t))+'원/개':'')
+    : PLAT+' · 아직 입력된 실적이 없습니다. 각 SKU의 오른쪽 칸에 새 달 실적을 등록하세요.';
+  document.getElementById('tabs').innerHTML=PLATS.map(function(p){
+    var S=STORE[p],c=0; for(var k in S) c+=Object.keys(S[k]).length;
+    return '<button data-p="'+p+'"'+(p===PLAT?' class="on"':'')+'>'+p+
+      (c?'<span class="cnt">입력 '+c+'</span>':'')+'</button>'; }).join('');
+}
+function drawOne(k,big){ var i=P().skus.indexOf(k), el=document.getElementById('sv'+i);
+  if(big===undefined) big=(ZOOM===i);
+  if(el) el.innerHTML=chart(function(mk){return rec(PLAT,k,mk);},!!big,'q'); }
+function drawTotal(){ var el=document.getElementById('sv_total');
+  if(el) el.innerHTML=chart(function(mk){return totRec(PLAT,mk);},true,tmetric); updStat(); }
+
+/* ── 일별 출고 추이 ────────────────────────────────────────────────
+   플랫폼(쿠팡/컬리)을 바꾸면 그 플랫폼 것만 그린다. 막대에 커서를 올리면
+   그날 무엇이 얼마나 나갔는지 오른쪽에 뜬다. */
+var TREND={}, TREND_DAYS=30, TREND_PIN=null;
+var OPEN_SKU={};   /* 펼쳐 둔 SKU 카드 (다시 그릴 때도 유지) */
+
+function trendDraw(){
+  var host=document.getElementById('trendChart'); if(!host) return;
+  var all=TREND[PLAT]||[];
+  var s=all.slice(-TREND_DAYS);
+  var sub=document.getElementById('trendSub');
+  if(!s.length){
+    host.innerHTML='<div class="trend-tip hint" style="border:none;padding:26px 6px">'+
+      '아직 '+esc(PLAT)+' 거래내역이 없어요. 위 <b>📦 거래내역 끌어놓기</b>로 파일을 올려주세요.</div>';
+    if(sub) sub.textContent='';
+    document.getElementById('trendTip').innerHTML='';
+    return;
+  }
+  var tot=s.reduce(function(a,d){return a+d.qty;},0);
+  if(sub) sub.textContent=s[0].date+' ~ '+s[s.length-1].date+' · 합계 '+nf(tot)+'개 · '+PLAT;
+
+  var W=760,H=240,ML=52,MR=8,MT=14,MB=30;
+  var iw=W-ML-MR, ih=H-MT-MB;
+  var mx=Math.max.apply(null,s.map(function(d){return d.qty;}));
+  mx=niceMax(mx||1);
+  var bw=Math.max(3, Math.min(30, iw/s.length*0.66));
+  var X=function(i){ return ML + (s.length===1? iw/2 : i*iw/(s.length-1)); };
+  var Y=function(v){ return MT+ih-(v/mx)*ih; };
+  var col=P().color;
+
+  var g='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">';
+  for(var t=0;t<=4;t++){
+    var v=mx*t/4, y=Y(v);
+    g+='<line x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'" stroke="#e6e9ed"/>'+
+       '<text x="'+(ML-7)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="9.5" fill="#999">'+nf(v)+'</text>';
+  }
+  var step=Math.max(1,Math.ceil(s.length/9));
+  s.forEach(function(d,i){
+    var x=X(i), y=Y(d.qty), h=MT+ih-y;
+    g+='<g class="tbar" data-i="'+i+'">'+
+       '<rect class="bar" x="'+(x-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+
+         '" height="'+Math.max(1,h).toFixed(1)+'" rx="2" fill="'+col+'"/>'+
+       '<rect class="hit" x="'+(x-Math.max(bw,iw/s.length)/2).toFixed(1)+'" y="'+MT+
+         '" width="'+Math.max(bw,iw/s.length).toFixed(1)+'" height="'+ih+'"/></g>';
+    if(i%step===0||i===s.length-1)
+      g+='<text x="'+x+'" y="'+(H-9)+'" text-anchor="middle" font-size="9" fill="#999">'+
+         d.date.slice(5).replace('-','/')+'</text>';
+  });
+  g+='</svg>';
+  host.innerHTML=g;
+
+  function show(i){
+    var d=s[i]; if(!d) return;
+    Array.prototype.forEach.call(host.querySelectorAll('.tbar'),function(b){
+      b.classList.toggle('sel', b.getAttribute('data-i')===String(i)); });
+    document.getElementById('trendTip').innerHTML=
+      '<div class="d">'+d.date+'</div>'+
+      '<div class="tot">'+nf(d.qty)+'개 · 공급가 '+nf(d.supply)+'원 · '+d.items.length+'개 품목</div>'+
+      d.items.map(function(it){
+        var pc=d.qty?Math.round(it.qty/d.qty*100):0;
+        return '<div class="it"><span class="n">'+esc(it.name)+'</span>'+
+               '<span class="q">'+nf(it.qty)+'</span><span class="pc">'+pc+'%</span></div>';
+      }).join('');
+  }
+  Array.prototype.forEach.call(host.querySelectorAll('.tbar'),function(b){
+    var i=+b.getAttribute('data-i');
+    b.addEventListener('mouseenter',function(){ if(TREND_PIN===null) show(i); });
+    b.addEventListener('click',function(){ TREND_PIN=(TREND_PIN===i?null:i); show(i); });
+  });
+  host.addEventListener('mouseleave',function(){ if(TREND_PIN!==null) show(TREND_PIN); });
+  show(TREND_PIN!==null && TREND_PIN<s.length ? TREND_PIN : s.length-1);
+
+  var dh=document.getElementById('trendDays');
+  if(dh && !dh.dataset.done){
+    dh.dataset.done='1';
+    dh.innerHTML=[14,30,60].map(function(n){
+      return '<button type="button" data-d="'+n+'"'+(n===TREND_DAYS?' class="on"':'')+'>'+n+'일</button>';
+    }).join('');
+    dh.querySelectorAll('[data-d]').forEach(function(b){
+      b.onclick=function(){
+        TREND_DAYS=+b.getAttribute('data-d'); TREND_PIN=null;
+        dh.querySelectorAll('[data-d]').forEach(function(x){
+          x.classList.toggle('on', x===b); });
+        trendDraw();
+      };
+    });
+  }
+}
+
+function trendLoad(){
+  if(!SYNC){ return; }
+  if(TREND[PLAT]){ trendDraw(); return; }
+  api('/api/ecom/txn/trend',{plat:PLAT,days:60}).then(function(r){
+    TREND[PLAT]=r.series||[]; trendDraw();
+  }).catch(function(){ TREND[PLAT]=[]; trendDraw(); });
+}
+
+/* ── 이커머스 비중: 전체 출고(수요예측 실적) 대비 쿠팡·컬리 거래내역 비중 ── */
+var SHARE_YM=null, SHARE_CACHE={};
+function sharePct(n,d){ return d?Math.round(n/d*100)+'%':'–'; }
+function shareInitSelect(){
+  var sel=document.getElementById('shareYm'); if(!sel||sel.dataset.done) return;
+  sel.dataset.done='1';
+  var d=new Date(), opts=[];
+  for(var i=0;i<12;i++){
+    var y=d.getFullYear(), m=d.getMonth()+1-i;
+    while(m<1){ m+=12; y--; }
+    var ym=y+'-'+('0'+m).slice(-2);
+    opts.push('<option value="'+ym+'">'+y+'년 '+m+'월</option>');
+    /* 기본값은 '지난달' — 이번 달은 며칠치뿐이라 비중이 0%에 가깝게 나와 오해를 부른다 */
+    if(i===1) SHARE_YM=ym;
+  }
+  sel.innerHTML=opts.join('');
+  sel.value=SHARE_YM;
+  sel.onchange=function(){ SHARE_YM=sel.value; shareLoad(); };
+}
+function shareRender(r){
+  document.getElementById('shareTotalV').innerHTML=nf(r.total_qty)+'개';
+  document.getElementById('shareEcomPct').textContent=sharePct(r.ecom_qty,r.total_qty);
+  document.getElementById('shareEcomV').textContent=nf(r.ecom_qty)+'개';
+  document.getElementById('shareOtherPct').textContent=sharePct(r.other_qty,r.total_qty);
+  document.getElementById('shareOtherV').textContent=nf(r.other_qty)+'개';
+  document.getElementById('shareCoupangV').textContent=nf(r.coupang_qty)+'개';
+  document.getElementById('shareKurlyV').textContent=nf(r.kurly_qty)+'개';
+}
+function shareLoad(){
+  if(!SYNC) return;
+  shareInitSelect();          /* 여기서 SHARE_YM 이 정해진다 (먼저 불러야 한다) */
+  if(!SHARE_YM) return;
+  if(SHARE_CACHE[SHARE_YM]){ shareRender(SHARE_CACHE[SHARE_YM]); return; }
+  api('/api/ecom/share',{ym:SHARE_YM},false).then(function(r){
+    SHARE_CACHE[SHARE_YM]=r; shareRender(r);
+  }).catch(function(){});
+}
+(function initShareToggle(){
+  var node=document.getElementById('shareEcomNode'); if(!node) return;
+  var det=document.getElementById('shareEcomDetail');
+  var open=function(){
+    var o=det.hasAttribute('hidden');
+    if(o) det.removeAttribute('hidden'); else det.setAttribute('hidden','');
+    node.setAttribute('aria-expanded', o?'true':'false');
+  };
+  node.addEventListener('click', open);
+  node.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+})();
+
+/* ── 오늘의 핵심 — 수요예측 탭과 같은 방식 ──────────────────────────
+   1) 갑자기 뛴 판매: 가장 최근 달이 그 전 달의 1.5배 이상
+   2) 마진이 위험한 SKU: 개당 마진이 마이너스거나 마진율 10% 미만
+   (수요예측 탭은 '재고 바닥'을 보지만 이커머스엔 재고가 없어서, 대신 돈이 새는 곳을 본다) */
+var ECOM_SURGE_MIN=1.5, ECOM_MARGIN_MIN=0.10, ECOM_MARGIN_DROP=0.05;
+
+/* 그 SKU에서 값이 있는 마지막 두 달을 찾는다 */
+function lastTwo(p,k){
+  var ms=MONTHS(), got=[];
+  for(var i=ms.length-1;i>=0 && got.length<2;i--){
+    var r=rec(p,k,ms[i]);
+    if(r&&r.q!=null) got.push({mk:ms[i],r:r});
+  }
+  return got;
+}
+function ecomSurges(){
+  var out=[];
+  P().skus.forEach(function(k){
+    if(isHidden(k)||!inBrand(k)) return;
+    var g=lastTwo(PLAT,k);
+    if(g.length<2) return;
+    var cur=g[0], prv=g[1];
+    if(!prv.r.q) return;
+    var ratio=cur.r.q/prv.r.q;
+    if(ratio>=ECOM_SURGE_MIN) out.push({k:k,mk:cur.mk,q:cur.r.q,prev:prv.r.q,pmk:prv.mk,ratio:ratio});
+  });
+  out.sort(function(a,b){return b.ratio-a.ratio;});
+  return out;
+}
+function marginOf(r){
+  if(!r||r.c==null) return null;
+  var u=UP(r); if(!u) return null;
+  var mg=MG(u,AC(r.c),r);
+  return (mg==null)?null:{mg:mg,rate:mg/u,u:u};
+}
+/* 마진이 마이너스이거나, 전달보다 마진율이 뚝 떨어진 SKU.
+   이 회사 마진율은 보통 40~60% 라서 '10% 미만' 같은 절대 기준으로는 아무것도 안 걸린다.
+   그래서 '지난달 대비 얼마나 나빠졌나'를 같이 본다. */
+function ecomRisks(){
+  var out=[];
+  P().skus.forEach(function(k){
+    if(isHidden(k)||!inBrand(k)) return;
+    var g=lastTwo(PLAT,k);
+    if(!g.length) return;
+    var cur=g[0], m=marginOf(cur.r);
+    if(!m) return;
+    var prev=(g.length>1)?marginOf(g[1].r):null;
+    var drop=prev?(prev.rate-m.rate):null;
+    var bad = (m.mg<0) || (m.rate<ECOM_MARGIN_MIN) || (drop!=null && drop>=ECOM_MARGIN_DROP);
+    if(!bad) return;
+    out.push({k:k,mk:cur.mk,q:cur.r.q,mg:m.mg,rate:m.rate,ad:ADC(cur.r),
+              drop:drop,pmk:prev?g[1].mk:null,prate:prev?prev.rate:null});
+  });
+  /* 적자 먼저, 그다음 많이 떨어진 순 */
+  out.sort(function(a,b){
+    if((a.mg<0)!==(b.mg<0)) return a.mg<0?-1:1;
+    return (b.drop||0)-(a.drop||0);
+  });
+  return out;
+}
+function renderEcomToday(){
+  var sEl=document.getElementById('ecomSurgeList'), rEl=document.getElementById('ecomRiskList');
+  if(!sEl||!rEl) return;
+  var su=ecomSurges(), rk=ecomRisks();
+  var ent=entered(), last=ent.length?ent[ent.length-1]:null;
+  var a=document.getElementById('ecomAsOf');
+  if(a) a.textContent=(last?lab(last)+'월 기준':'')+' · '+PLAT;
+  var sc=document.getElementById('ecomSurgeCnt'), rc=document.getElementById('ecomRiskCnt');
+  if(sc) sc.textContent=su.length?su.length+'개':'';
+  if(rc) rc.textContent=rk.length?rk.length+'개':'';
+
+  sEl.innerHTML=su.length?su.map(function(x){
+    return '<div class="today-row"><div class="today-nm"><b>'+esc(x.k)+'</b>'+
+      '<span>'+lab(x.mk)+'월 '+nf(x.q)+'개 · '+lab(x.pmk)+'월 '+nf(x.prev)+'개</span></div>'+
+      '<div class="today-fig"><b>'+nf(x.q)+'</b><span>이번 판매량</span></div>'+
+      '<span class="today-badge up">×'+x.ratio.toFixed(1)+'</span></div>';
+  }).join(''):'<div class="today-empty">전달보다 크게 뛴 SKU가 없어요.</div>';
+
+  rEl.innerHTML=(rk.length?rk.map(function(x){
+    var why = x.mg<0 ? '적자'
+            : (x.drop!=null && x.drop>=ECOM_MARGIN_DROP
+                ? lab(x.pmk)+'월 '+(x.prate*100).toFixed(0)+'% → '+(x.rate*100).toFixed(0)+'%'
+                : '마진율 낮음');
+    return '<div class="today-row"><div class="today-nm"><b>'+esc(x.k)+'</b>'+
+      '<span>'+lab(x.mk)+'월 '+nf(x.q)+'개 · '+why+(x.ad?' · 광고비 '+nf(x.ad)+'원/개':'')+'</span></div>'+
+      '<div class="today-fig"><b>'+nf(x.mg)+'</b><span>개당 마진</span></div>'+
+      '<span class="today-badge down">'+(x.drop!=null&&x.drop>0?'-'+(x.drop*100).toFixed(1)+'%p':(x.rate*100).toFixed(0)+'%')+'</span></div>';
+  }).join(''):'<div class="today-empty">마진이 나빠진 SKU가 없어요.</div>')+
+    '<div class="today-note">개당 마진이 <b>적자</b>거나, 지난달보다 마진율이 <b>5%p 이상</b> 떨어진 SKU예요. 원가가 연결된 SKU만 봅니다.</div>';
+}
+
+/* 월별 판매실적 입력 칸은 2026-08 에 없앴다 — 실적은 거래내역(.xls) 파일로만 들어온다.
+   logsHTML/optHTML/setLock/doFix/bindLogs/refreshPanel 도 같이 지웠다. */
+
+/* 브랜드 탭 */
+function renderBrandTabs(){
+  var el=document.getElementById('btabs'); if(!el) return;
+  var bs=BRANDS(PLAT);
+  if(bs.indexOf(BR)<0) BR='전체';
+  el.innerHTML=bs.map(function(b){
+    var n=P().skus.filter(function(k){ return !isHidden(k) && (b==='전체'||BRAND(k)===b); }).length;
+    return '<button data-br="'+esc(b)+'"'+(b===BR?' class="on"':'')+'>'+esc(b)+
+           '<span class="bc">'+n+'</span></button>'; }).join('');
+}
+
+/* 브랜드 월 광고비 입력 (쿠팡 전용) */
+/* 삭제한 SKU 안내 + 되돌리기 */
+function renderHidBar(){
+  var el=document.getElementById('hidbar'); if(!el) return;
+  var list=hiddenList(PLAT);
+  if(!list.length){ el.innerHTML=''; return; }
+  el.innerHTML = '<div class="hidhead">🙈 숨긴 SKU <b>'+list.length+'개</b> — 입력값은 그대로 보관 중이에요 '+
+      '<button id="hidrestore">전부 되돌리기</button></div>'+
+    '<div class="hidlist">'+list.map(function(k){
+      return '<span class="hitem">'+esc(k)+
+             '<button class="un" data-un="'+esc(k)+'" title="이 SKU만 되돌리기">되돌리기</button></span>'; }).join('')+'</div>';
+  var b=document.getElementById('hidrestore');
+  if(b) b.addEventListener('click', restoreHidden);
+  Array.prototype.forEach.call(el.querySelectorAll('[data-un]'), function(x){
+    x.addEventListener('click', function(){ unhideSku(x.getAttribute('data-un')); });
+  });
+}
+
+/* 광고비 추이 선그래프 — 표 아래에 그 브랜드(또는 전체)의 월 광고비 흐름을 그린다 */
+function adChart(brands){
+  var months=adMonths(PLAT);
+  var pts=months.map(function(mk){
+    var sp=0; brands.forEach(function(b){ sp+=adSpend(PLAT,b,mk); });
+    return {mk:mk, v:sp};
+  });
+  var mx=0; pts.forEach(function(p){ if(p.v>mx) mx=p.v; });
+  if(!mx) return '<div class="adempty">아직 입력된 광고비가 없어요 — 위 표에 금액을 넣으면 여기에 추이가 그려집니다.</div>';
+  mx=niceMax(mx);
+  var W=Math.max(560, pts.length*46), H=170, PL=58, PR=14, PT=14, PB=34;
+  var iw=W-PL-PR, ih=H-PT-PB;
+  function X(i){ return PL + (pts.length<=1 ? iw/2 : i*(iw/(pts.length-1))); }
+  function Y(v){ return PT + ih - (v/mx)*ih; }
+
+  var g='';
+  for(var t=0;t<=4;t++){
+    var y=PT+ih-(t/4)*ih, gv=mx*t/4;
+    g+='<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+y.toFixed(1)+'" stroke="#e8ebef"/>'+
+       '<text x="'+(PL-7)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="#9aa1aa">'+nf(gv)+'</text>';
+  }
+  var d='', area='';
+  pts.forEach(function(p,i){
+    d += (i?'L':'M')+X(i).toFixed(1)+','+Y(p.v).toFixed(1)+' ';
+  });
+  area = 'M'+X(0).toFixed(1)+','+(PT+ih)+' '+d.replace(/^M/,'L')+'L'+X(pts.length-1).toFixed(1)+','+(PT+ih)+' Z';
+
+  var dots='', labs='';
+  var every=Math.max(1, Math.ceil(pts.length/12));
+  pts.forEach(function(p,i){
+    if(p.v>0){
+      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="3.2" fill="var(--c)">'+
+            '<title>'+p.mk+' · '+nf(p.v)+'원</title></circle>';
+    }
+    if(i%every===0||i===pts.length-1){
+      labs+='<text x="'+X(i).toFixed(1)+'" y="'+(H-PB+16)+'" text-anchor="middle" font-size="9.5" fill="#9aa1aa">'+lab(p.mk)+'</text>';
+    }
+  });
+  var tot=0; pts.forEach(function(p){ tot+=p.v; });
+  return '<div class="adchart"><div class="acap">📈 월별 광고비 추이 — 누적 <b>'+nf(tot)+'</b>원</div>'+
+    '<div style="overflow-x:auto"><svg width="'+W+'" height="'+H+'">'+g+
+    '<path d="'+area+'" fill="var(--c)" opacity="0.09"/>'+
+    '<path d="'+d.trim()+'" fill="none" stroke="var(--c)" stroke-width="2" stroke-linejoin="round"/>'+
+    dots+labs+'</svg></div></div>';
+}
+
+function renderAdPanel(){
+  var el=document.getElementById('adpanel'); if(!el) return;
+  if(PLAT!=='쿠팡'){ el.innerHTML=''; return; }
+  var years=adYears(PLAT);
+  if(!years.length){ el.innerHTML=''; return; }
+  if(years.indexOf(ADYEAR)<0){
+    /* 기본은 올해. 올해가 목록에 없으면 실적이 있는 마지막 연도 */
+    var cur=String(new Date().getFullYear());
+    ADYEAR = years.indexOf(cur)>=0 ? cur
+           : P(PLAT).months[P(PLAT).months.length-1].slice(0,4);
+    if(years.indexOf(ADYEAR)<0) ADYEAR=years[years.length-1];
+  }
+  var months=adMonths(PLAT).filter(function(mk){ return mk.slice(0,4)===ADYEAR; });
+  var all=(BR==='전체'), brands=all?BRANDS(PLAT).slice(1):[BR];
+
+  var ytabs=years.map(function(y){
+    var sp=0;
+    adMonths(PLAT).filter(function(mk){return mk.slice(0,4)===y;}).forEach(function(mk){
+      brands.forEach(function(b){ sp+=adSpend(PLAT,b,mk); }); });
+    return '<button data-ady="'+y+'"'+(y===ADYEAR?' class="on"':'')+'>'+y+'년'+
+           (sp?'<span class="ac">'+nf(sp)+'원</span>':'')+'</button>';
+  }).join('');
+
+  var rows=months.map(function(mk){
+    var sp=0,q=0;
+    brands.forEach(function(b){ sp+=adSpend(PLAT,b,mk); q+=brandQty(PLAT,b,mk); });
+    var pu=q?sp/q:null;
+    return '<tr'+(sp?'':' class="zero"')+'><td class="mk">'+mk+'</td>'+
+      '<td>'+(all
+        ? nf(sp)+' 원'
+        : '<input type="number" min="0" step="1000" data-mk="'+mk+'" value="'+(sp||'')+'" placeholder="0">')+'</td>'+
+      '<td>'+nf(q)+' 개</td>'+
+      '<td class="pu">'+(pu==null?'-':nf(pu)+' 원')+'</td></tr>';
+  }).join('');
+
+  el.innerHTML='<div class="adcard"><h4>📣 광고비 입력 — '+esc(all?'전체 (브랜드별 합계)':BR)+'</h4>'+
+    '<div class="sub2">'+(all
+      ? '브랜드 탭을 고르면 그 브랜드의 월 광고비를 직접 입력할 수 있어요. 여기서는 전 브랜드 합계만 보여줍니다.'
+      : '그 달 광고비 총액을 넣으면 <b>광고비 ÷ 그 달 🚀로켓배송 등록 SKU 판매수량</b>으로 개당 광고비가 계산되어, <b>로켓배송 등록된 SKU에만</b> 마진 반영됩니다. (로켓 미등록 SKU는 광고가 안 붙으므로 0원)')+
+    ' ('+AD_FROM.replace('-','년 ')+'월부터)</div>'+
+    '<div class="adyears">'+ytabs+'</div>'+
+    '<table class="adtbl"><thead><tr><th>월</th><th>광고비</th><th>판매수량</th><th>개당 광고비</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table>'+
+    adChart(brands)+'</div>';
+
+  Array.prototype.forEach.call(el.querySelectorAll('[data-ady]'), function(b){
+    b.addEventListener('click', function(){ ADYEAR=b.getAttribute('data-ady'); renderAdPanel(); });
+  });
+
+  Array.prototype.forEach.call(el.querySelectorAll('input[data-mk]'), function(inp){
+    inp.addEventListener('input', function(){
+      var v=parseFloat(inp.value);
+      var mk=inp.getAttribute('data-mk');
+      setAdSpend(PLAT, BR, mk, isNaN(v)?0:Math.max(0,v));
+      var tr=inp.closest('tr'), q=brandQty(PLAT,BR,mk), sp=adSpend(PLAT,BR,mk);
+      tr.children[2].textContent=nf(q)+' 개';
+      tr.children[3].textContent=q?nf(sp/q)+' 원':'-';
+      tr.className = sp?'':'zero';
+      /* 개당 광고비가 바뀌었으니 합계·해당 브랜드 SKU 그래프를 모두 다시 그림 */
+      drawTotal(); P().skus.filter(function(k){ return !isHidden(k)&&inBrand(k); }).forEach(function(k){ drawOne(k); });
+      updStat();
+      document.querySelectorAll('.det').forEach(function(x){ x.classList.remove('on'); });
+      /* 추이 그래프·연도탭 합계도 갱신 */
+      var ch=el.querySelector('.adchart');
+      if(ch) ch.outerHTML=adChart(brands);
+    });
+  });
+}
+
+function render(){
+  if(typeof closeZoom==='function') closeZoom();
+  var D=P(), SKUS=D.skus, DAT=D.data;
+  document.documentElement.style.setProperty('--c',D.color);
+  document.documentElement.style.setProperty('--bg',D.bg);
+  var q=document.getElementById('q').value.trim().toLowerCase(),
+      mode=document.getElementById('sort').value, o26=document.getElementById('only26').checked;
+  renderBrandTabs(); renderHidBar(); renderAdPanel(); renderEcomToday(); trendLoad(); shareLoad();
+  var list=SKUS.filter(function(k){ return !isHidden(k) && inBrand(k) && k.toLowerCase().indexOf(q)>=0 && (!o26||active(k)); });
+  if(mode==='vol') list.sort(function(a,b){return tot(b)-tot(a);});
+  else if(mode==='growth') list.sort(function(a,b){return (g6(b)==null?-1e9:g6(b))-(g6(a)==null?-1e9:g6(a));});
+  else list.sort(function(a,b){return a.localeCompare(b,'ko');});
+
+  var brLbl=(BR==='전체'?'전체':BR), brN=SKUS.filter(function(k){return !isHidden(k)&&inBrand(k);}).length;
+  var h='<div class="card full"><div class="tt">'+PLAT+' · '+brLbl+' 합계 (SKU '+brN+'개)</div>'+
+    '<div class="tmet" id="tmet">'+TMETRICS.map(function(x){
+      return '<button data-tm="'+x[0]+'"'+(x[0]===tmetric?' class="on"':'')+'>'+x[1]+'</button>'; }).join('')+'</div>'+
+    '<div class="lg"><i style="background:'+D.color+'"></i>기존 실적 &nbsp; <i style="background:'+CN+'"></i>입력 실적 · 점을 누르면 상세가 나옵니다</div>'+
+    '<div class="row"><div class="chartbox" id="sv_total" data-k="__TOTAL__"></div></div><div class="det" id="dt_total"></div></div>';
+  list.forEach(function(k){
+    var i=SKUS.indexOf(k), r=g6(k), e=ST()[k];
+    var nb=DAT[k].cn?'':' <span class="badge bno">원가 미연결</span>';
+    var eb=(e&&Object.keys(e).length)?' <span class="badge bnew">입력 '+Object.keys(e).length+'건</span>':'';
+    var rb=(PLAT==='쿠팡')?'<label class="rocket'+(isRocket(k)?' on':'')+'"><input type="checkbox" data-rocket="'+i+'"'+(isRocket(k)?' checked':'')+'> 🚀 로켓배송</label>':'';
+    var op=!!OPEN_SKU[k];
+    h+='<div class="card'+(op?'':' collapsed')+'" id="cd'+i+'"><div class="tt" data-tog="'+i+'">'+
+      '<span class="cchev">'+(op?'▾':'▸')+'</span>'+esc(k)+nb+eb+rb+
+      '<button class="zoombtn" data-zoom="'+i+'">⤢ 크게 보기</button>'+
+      '<button class="zoombtn" data-daily="'+i+'">📅 일별 보기</button>'+
+      '<button class="delbtn" data-del="'+i+'">🙈 숨기기</button>'+
+      (isCustom(k)?'<button class="delbtn hard" data-rm="'+i+'">🗑 완전삭제</button>'
+                  :'')+'</div>'+
+      '<div class="meta">누적 '+nf(tot(k))+'개'+(r==null?'':' · 최근6개월 '+(r>=0?'▲':'▼')+' '+Math.abs(r).toFixed(0)+'%')+'</div>'+
+      '<div class="cbody"><div class="row"><div class="chartbox full" id="sv'+i+'" data-k="'+i+'"></div>'+
+      '</div><div class="det" id="dt'+i+'"></div></div></div>';
+  });
+  document.getElementById('grid').innerHTML=h;
+  drawTotal();
+  list.forEach(function(k){
+    var i=SKUS.indexOf(k);
+    if(OPEN_SKU[k]) drawOne(k);            /* 펼친 것만 그린다 — 60개를 다 그리면 느리고 복잡하다 */
+    var card=document.getElementById('cd'+i);
+    var tt=card.querySelector('[data-tog]');
+    if(tt) tt.addEventListener('click', function(e){
+      if(e.target.closest('button,label,input')) return;   /* 버튼 누른 건 접기와 무관 */
+      var open=card.classList.toggle('collapsed')===false;
+      OPEN_SKU[k]=open;
+      card.querySelector('.cchev').textContent = open?'▾':'▸';
+      if(open) drawOne(k);
+    });
+    var dbtn=document.getElementById('cd'+i).querySelector('[data-daily]');
+    if(dbtn) dbtn.onclick=function(){ showDaily(PLAT,k); };
+    var rc=document.getElementById('cd'+i).querySelector('[data-rocket]');
+    if(rc) rc.onchange=function(){
+      setRocket(k, rc.checked); rc.closest('label').classList.toggle('on', rc.checked);
+      drawTotal(); P().skus.filter(function(x){ return !isHidden(x)&&inBrand(x)&&BRAND(x)===BRAND(k); }).forEach(function(x){ drawOne(x); });
+      renderAdPanel();
+    };
+  });
+}
+
+var ZOOM=null;
+function openZoom(i){
+  if(ZOOM!==null) closeZoom();
+  var card=document.getElementById('cd'+i); if(!card) return;
+  var ph=document.createElement('div'); ph.id='ph'+i; card.parentNode.insertBefore(ph,card);
+  document.getElementById('ovbody').appendChild(card);
+  document.getElementById('ov').classList.add('on');
+  document.body.style.overflow='hidden';
+  ZOOM=i; drawOne(P().skus[i],true);
+}
+function closeZoom(){
+  if(ZOOM===null) return;
+  var i=ZOOM, card=document.getElementById('cd'+i), ph=document.getElementById('ph'+i);
+  if(card&&ph){ ph.parentNode.insertBefore(card,ph); ph.parentNode.removeChild(ph); }
+  document.getElementById('ov').classList.remove('on');
+  document.body.style.overflow='';
+  ZOOM=null; if(card) drawOne(P().skus[i],false);
+}
+document.getElementById('ovx').onclick=closeZoom;
+document.getElementById('ov').onclick=function(ev){ if(ev.target===this) closeZoom(); };
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeZoom(); });
+
+document.addEventListener('click',function(ev){
+  var t=ev.target;
+  if(t.getAttribute&&t.getAttribute('data-zoom')!==null&&t.getAttribute('data-zoom')!==undefined&&t.classList.contains('zoombtn')){
+    openZoom(+t.getAttribute('data-zoom')); return; }
+  if(t.getAttribute&&t.getAttribute('data-cl')){ t.parentNode.classList.remove('on'); return; }
+  if(t.getAttribute&&t.getAttribute('data-tm')){
+    tmetric=t.getAttribute('data-tm');
+    var tb=document.getElementById('tmet');
+    if(tb) tb.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on',x.getAttribute('data-tm')===tmetric); });
+    var dd=document.getElementById('dt_total'); if(dd) dd.classList.remove('on');
+    drawTotal(); return; }
+  if(t.getAttribute&&t.getAttribute('data-p')){
+    var p=t.getAttribute('data-p'); if(p===PLAT) return;
+    PLAT=p; BR='전체'; document.getElementById('q').value=''; render(); return; }
+  if(t.getAttribute&&t.getAttribute('data-rm')!==null&&t.classList.contains('hard')){
+    removeCustomSku(P().skus[+t.getAttribute('data-rm')]); return; }
+  if(t.getAttribute&&t.getAttribute('data-del')!==null&&t.classList.contains('delbtn')){
+    hideSku(P().skus[+t.getAttribute('data-del')]); return; }
+  if(t.getAttribute&&t.getAttribute('data-br')){
+    var b=t.getAttribute('data-br'); if(b===BR) return;
+    BR=b; render(); return; }
+  if(!t.classList||!t.classList.contains('pt')) return;
+  var box=t.closest('.chartbox'); if(!box) return;
+  var kk=box.getAttribute('data-k'), mk=t.getAttribute('data-mk'), det, r;
+  if(kk==='__TOTAL__'){ det=document.getElementById('dt_total'); r=totRec(PLAT,mk);
+    if(det){ det.innerHTML=detTotal(mk,r); det.classList.add('on'); } return; }
+  else { det=document.getElementById('dt'+kk); r=rec(PLAT,P().skus[+kk],mk); }
+  if(!det) return;
+  det.innerHTML=detHTML(mk,r); det.classList.add('on');
+});
+
+function readAdj(){
+  var v=parseFloat(document.getElementById('vat').value), l=parseFloat(document.getElementById('log').value);
+  VATR=isNaN(v)?0:Math.max(0,v); LOGR=isNaN(l)?0:Math.max(0,l);
+  try{ localStorage.setItem('adj_rates',JSON.stringify([VATR,LOGR])); }catch(e){}
+  if(typeof pushSetting==='function') pushSetting('adj_rates',JSON.stringify([VATR,LOGR]));
+}
+try{ var _a=JSON.parse(localStorage.getItem('adj_rates')||'null');
+  if(_a){ VATR=_a[0]; LOGR=_a[1];
+    document.getElementById('vat').value=VATR; document.getElementById('log').value=LOGR; } }catch(e){}
+/* 부가세·물류비는 "확인"을 눌러야 전체 SKU에 반영된다 (타이핑 도중 값이 튀지 않게) */
+function adjDirty(){
+  var v=parseFloat(document.getElementById('vat').value), l=parseFloat(document.getElementById('log').value);
+  v=isNaN(v)?0:v; l=isNaN(l)?0:l;
+  var st=document.getElementById('adjstate');
+  if(!st) return;
+  if(v!==VATR||l!==LOGR){ st.textContent='← 확인을 누르면 반영'; st.className='adjstate warn'; }
+  else { st.textContent=''; st.className='adjstate'; }
+}
+function applyAdj(){
+  readAdj(); render();
+  var st=document.getElementById('adjstate');
+  if(st){ st.textContent='반영됨 ('+adjTxt()+')'; st.className='adjstate ok';
+    setTimeout(function(){ if(st.className==='adjstate ok') st.textContent='';},2600); }
+  document.querySelectorAll('.det').forEach(function(x){ x.classList.remove('on'); });
+}
+['vat','log'].forEach(function(id){ var el=document.getElementById(id); if(!el) return;
+  el.addEventListener('input', adjDirty);
+  el.addEventListener('keydown', function(ev){ if(ev.key==='Enter') applyAdj(); }); });
+document.getElementById('adjok').addEventListener('click', applyAdj);
+document.getElementById('addsku').addEventListener('click', addSku);
+document.getElementById('q').addEventListener('input',render);
+document.getElementById('sort').addEventListener('change',render);
+document.getElementById('only26').addEventListener('change',render);
+document.getElementById('resetall').onclick=function(){
+  if(!confirm(PLAT+' 탭의 입력 실적을 모두 삭제합니다. 계속할까요?')) return;
+  STORE[PLAT]={}; save(); render(); };
+
+/* ════════ 데이터 내보내기 / 가져오기 / 공유용 파일 ════════
+   이 도구는 입력값을 브라우저(localStorage)에 저장한다.
+   그래서 HTML 파일만 보내면 받는 사람 화면엔 입력값이 안 보인다.
+   → 아래 기능으로 데이터를 같이 넘겨야 한다. */
+var SHARE_KEYS=['ad_spend','hidden_sku','custom_sku','adj_rates','rocket_sku'];
+function dumpData(){
+  var out={_v:1, _at:new Date().toISOString(), perf:{}, misc:{}};
+  PLATS.forEach(function(p){ out.perf[p]=STORE[p]||{}; });
+  SHARE_KEYS.forEach(function(k){
+    var v=localStorage.getItem(k); if(v!=null) out.misc[k]=v; });
+  return out;
+}
+function loadData(obj, mode){
+  if(!obj||!obj.perf) throw new Error('형식이 올바르지 않은 파일이에요.');
+  PLATS.forEach(function(p){
+    var incoming=obj.perf[p]||{};
+    if(mode==='replace'){ STORE[p]=incoming; }
+    else {                                   /* 합치기 — 같은 달은 파일 값이 이김 */
+      var cur=STORE[p]||{};
+      Object.keys(incoming).forEach(function(k){
+        cur[k]=cur[k]||{};
+        Object.keys(incoming[k]).forEach(function(mk){ cur[k][mk]=incoming[k][mk]; });
+      });
+      STORE[p]=cur;
+    }
+    try{ localStorage.setItem('perf_'+p, JSON.stringify(STORE[p])); }catch(e){}
+  });
+  Object.keys(obj.misc||{}).forEach(function(k){
+    if(SHARE_KEYS.indexOf(k)<0) return;
+    if(mode==='replace' || localStorage.getItem(k)==null){
+      try{ localStorage.setItem(k, obj.misc[k]); }catch(e){}
+    }
+  });
+  /* 메모리 상태도 다시 읽어들임 */
+  try{ ADSPEND=JSON.parse(localStorage.getItem('ad_spend')||'{}')||{}; }catch(e){}
+  try{ HIDDEN=JSON.parse(localStorage.getItem('hidden_sku')||'{}')||{}; }catch(e){}
+  try{ CUSTOM=JSON.parse(localStorage.getItem('custom_sku')||'{}')||{}; }catch(e){}
+  try{ ROCKET=JSON.parse(localStorage.getItem('rocket_sku')||'{}')||{}; }catch(e){}
+  try{ var a=JSON.parse(localStorage.getItem('adj_rates')||'null');
+       if(a){ VATR=a[0]; LOGR=a[1];
+              document.getElementById('vat').value=VATR;
+              document.getElementById('log').value=LOGR; } }catch(e){}
+  mountCustom();
+}
+function download(name, text, mime){
+  var b=new Blob([text],{type:mime||'application/json;charset=utf-8'});
+  var u=URL.createObjectURL(b), a=document.createElement('a');
+  a.href=u; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); },400);
+}
+function stamp(){ var d=new Date(),z=function(n){return('0'+n).slice(-2);};
+  return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes()); }
+
+document.getElementById('expjson').onclick=function(){
+  download('이커머스실적_'+stamp()+'.json', JSON.stringify(dumpData(),null,1));
+};
+document.getElementById('impjson').onclick=function(){ document.getElementById('impfile').click(); };
+document.getElementById('impfile').onchange=function(){
+  var f=this.files&&this.files[0]; if(!f) return;
+  var self=this;
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var obj=JSON.parse(String(fr.result));
+      var mode=confirm('가져오기 방식을 고르세요.\n\n[확인] 합치기 — 기존 입력은 두고, 같은 달만 파일 값으로 덮어씀\n[취소] 통째로 교체 — 지금 입력값을 전부 버리고 파일 내용으로 바꿈')
+        ? 'merge' : 'replace';
+      if(mode==='replace' && !confirm('정말 통째로 교체할까요? 지금 브라우저에 있는 입력값은 사라집니다.')) return;
+      loadData(obj, mode);
+      render();
+      alert('가져오기 완료 ('+(mode==='merge'?'합치기':'통째로 교체')+')');
+    }catch(e){ alert('가져오지 못했어요: '+e.message); }
+    finally{ self.value=''; }
+  };
+  fr.readAsText(f,'utf-8');
+};
+/* 지금 입력값을 HTML 안에 박아서 내보낸다 — 받는 사람은 열기만 하면 값이 다 보인다 */
+document.getElementById('mkshare').onclick=function(){
+  var boot='<script id="seeddata">window.__SEED__='+
+    JSON.stringify(dumpData()).replace(/<\//g,'<\\/')+';<\/script>';
+  var html=document.documentElement.outerHTML;
+  var old=html.match(/<script id="seeddata">[\s\S]*?<\/script>/);
+  html = old ? html.replace(old[0], boot) : html.replace('</head>', boot+'</head>');
+  download('이커머스_판매실적_공유용_'+stamp()+'.html',
+    '<!DOCTYPE html>\n'+html, 'text/html;charset=utf-8');
+  alert('공유용 파일을 저장했어요.\n\n지금 화면의 입력값·광고비가 파일 안에 들어가 있어서,\n받는 분은 파일을 열기만 하면 그대로 보입니다.');
+};
+/* 공유용 파일로 열렸다면 처음 한 번 그 값을 심는다 */
+(function seed(){
+  if(!window.__SEED__) return;
+  var mark='seeded_'+(window.__SEED__._at||'');
+  if(localStorage.getItem(mark)) return;      /* 이미 심었으면 사용자가 고친 값을 지키기 */
+  try{ loadData(window.__SEED__,'replace'); localStorage.setItem(mark,'1'); }catch(e){}
+})();
+
+/* ════════ 구글시트 공동작업 ════════
+   서버(대시보드)에서 열렸을 때만 동작한다. 파일을 그냥 열면 예전처럼
+   브라우저 저장만 쓰므로, 혼자 볼 땐 아무 설정 없이도 그대로 쓸 수 있다. */
+var SYNC = (location.protocol==='http:'||location.protocol==='https:');
+var SYNCED=false, PULLING=false;
+/* 시트와 맞추기 전 상태를 따로 백업해둔다 — 뭔가 잘못돼도 되돌릴 수 있게 */
+function backupLocal(){
+  try{
+    var b={at:new Date().toISOString(), perf:{}, misc:{}};
+    PLATS.forEach(function(p){ b.perf[p]=STORE[p]||{}; });
+    ['ad_spend','hidden_sku','custom_sku','adj_rates','rocket_sku'].forEach(function(k){
+      var v=localStorage.getItem(k); if(v!=null) b.misc[k]=v; });
+    var n=0; PLATS.forEach(function(p){ n+=Object.keys(b.perf[p]||{}).length; });
+    if(n||Object.keys(b.misc).length) localStorage.setItem('backup_before_sync', JSON.stringify(b));
+  }catch(e){}
+}
+function restoreBackup(){
+  var raw=localStorage.getItem('backup_before_sync');
+  if(!raw){ alert('백업이 없습니다.'); return; }
+  try{
+    var b=JSON.parse(raw);
+    if(!confirm('시트 연결 전 상태('+ (b.at||'') +')로 되돌립니다.\n지금 화면의 값과 합쳐집니다. 계속할까요?')) return;
+    loadData({perf:b.perf, misc:b.misc}, 'merge');
+    render();
+    alert('되돌렸어요. 시트에도 올리려면 [⬆ 시트로 올리기]를 눌러주세요.');
+  }catch(e){ alert('되돌리지 못했어요: '+e.message); }
+}
+function sst(txt, cls){
+  var el=document.getElementById('syncstate'); if(!el) return;
+  el.textContent=txt; el.className='syncstate '+(cls||'');
+}
+/* 쓰기는 한 번에 하나씩 줄 세운다 — 동시에 보내면 시트에서 서로 덮어써서
+   일부만 저장되는 일이 생긴다 (구글 API 분당 제한에도 걸림). */
+var _q = Promise.resolve();
+function api(path, body, queued){
+  var go = function(){
+    return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},
+                       body:JSON.stringify(body||{})})
+      .then(function(r){ return r.json().then(function(j){
+        if(!r.ok||j.error) throw new Error(j.error||('요청 실패 ('+r.status+')'));
+        return j; }); });
+  };
+  if(queued===false) return go();
+  var run = _q.then(go, go);
+  _q = run.catch(function(){});
+  return run;
+}
+/* 시트 → 화면 */
+function pull(quiet){
+  if(!SYNC) return Promise.resolve();
+  if(PULLING) return Promise.resolve();
+  PULLING=true;
+  if(!quiet) sst('시트에서 불러오는 중…','');
+  return api('/api/ecom/load',{}).then(function(d){
+    /* ⚠ 절대 통째로 갈아엎지 않는다 — 시트에 있는 달만 시트 값으로 바꾸고,
+       시트에 없는(=아직 안 올린) 내 입력값은 그대로 둔다.
+       예전엔 여기서 replace 를 해서 시트가 비어 있으면 내 값이 날아갔다. */
+    PLATS.forEach(function(p){
+      var incoming=(d.perf&&d.perf[p])||{}, cur=STORE[p]||{};
+      Object.keys(incoming).forEach(function(k){
+        cur[k]=cur[k]||{};
+        Object.keys(incoming[k]).forEach(function(mk){ cur[k][mk]=incoming[k][mk]; });
+      });
+      STORE[p]=cur;
+      try{ localStorage.setItem('perf_'+p,JSON.stringify(cur)); }catch(e){}
+    });
+    var inAd=d.ad||{};
+    Object.keys(inAd).forEach(function(p){
+      ADSPEND[p]=ADSPEND[p]||{};
+      Object.keys(inAd[p]).forEach(function(b){
+        ADSPEND[p][b]=ADSPEND[p][b]||{};
+        Object.keys(inAd[p][b]).forEach(function(mk){ ADSPEND[p][b][mk]=inAd[p][b][mk]; });
+      });
+    });
+    try{ localStorage.setItem('ad_spend',JSON.stringify(ADSPEND)); }catch(e){}
+    var s=d.settings||{};
+    if(s.hidden_sku){ try{ HIDDEN=JSON.parse(s.hidden_sku)||{}; localStorage.setItem('hidden_sku',s.hidden_sku); }catch(e){} }
+    if(s.custom_sku){ try{ CUSTOM=JSON.parse(s.custom_sku)||{}; localStorage.setItem('custom_sku',s.custom_sku); }catch(e){} }
+    if(s.rocket_sku){ try{ ROCKET=JSON.parse(s.rocket_sku)||{}; localStorage.setItem('rocket_sku',s.rocket_sku); }catch(e){} }
+    if(s.adj_rates){ try{ var a=JSON.parse(s.adj_rates); if(a){ VATR=a[0]; LOGR=a[1];
+        document.getElementById('vat').value=VATR; document.getElementById('log').value=LOGR;
+        localStorage.setItem('adj_rates',s.adj_rates); } }catch(e){} }
+    mountCustom();
+    SYNCED=true; SHEET_URL=d.url||'';
+    sst('구글시트 연결됨 · 모두가 같은 값을 봅니다','ok');
+    return true;
+  }).catch(function(e){
+    sst('시트 연결 안 됨 — 이 브라우저에만 저장돼요 ('+e.message+')','warn');
+    return false;
+  }).then(function(r){ PULLING=false; return r; });
+}
+var SHEET_URL='';
+/* 화면 → 시트 (실패해도 브라우저 저장은 이미 끝나 있어서 값은 안 잃는다) */
+function pushEntry(plat,sku,ym,v){
+  if(!SYNC||!SYNCED) return;
+  sst('저장 중…','');
+  api('/api/ecom/entry',{plat:plat,sku:sku,ym:ym,q:v.q,a:v.a,c:v.c})
+    .then(function(){ sst('시트에 저장됨','ok'); })
+    .catch(function(e){ sst('시트 저장 실패: '+e.message,'warn'); });
+}
+function pushEntryDelete(plat,sku,ym){
+  if(!SYNC||!SYNCED) return;
+  api('/api/ecom/entry-delete',{plat:plat,sku:sku,ym:ym})
+    .then(function(){ sst('시트에 반영됨','ok'); })
+    .catch(function(e){ sst('시트 반영 실패: '+e.message,'warn'); });
+}
+function pushAd(plat,brand,ym,v){
+  if(!SYNC||!SYNCED) return;
+  api('/api/ecom/ad',{plat:plat,brand:brand,ym:ym,v:v})
+    .then(function(){ sst('광고비 저장됨','ok'); })
+    .catch(function(e){ sst('광고비 저장 실패: '+e.message,'warn'); });
+}
+function pushSetting(key,value){
+  if(!SYNC||!SYNCED) return;
+  api('/api/ecom/setting',{key:key,value:value}).catch(function(){});
+}
+
+/* ════════ 거래내역(.xls) 드롭 → SKU별 수량·공급가·로켓배송 자동 갱신 ════════
+   쿠팡윙/컬리셀러 등에서 뽑은 출고 거래내역을 서버가 파싱·누적(주문번호로 중복 제거)해서
+   돌려주고, 여기서는 그 집계를 화면 값에 반영만 한다. 여러 번 겹쳐 올려도 안전하다. */
+/* ── 다크 모드 ──────────────────────────────────────────────
+   이 화면은 대시보드 안 iframe 이라 부모 테마가 자동으로 안 따라온다.
+   부모가 postMessage 로 알려주면 <html data-theme> 을 세운다.
+   파일을 그냥 열었을 땐(부모 없음) 브라우저 설정을 따른다. */
+function setTheme(t){
+  if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);
+}
+window.addEventListener('message', function(e){
+  if(e.data && e.data.type==='theme') setTheme(e.data.theme);
+});
+(function initTheme(){
+  var inFrame = (window.parent && window.parent !== window);
+  if(!inFrame){
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setTheme(mq.matches ? 'dark' : 'light');
+    if(mq.addEventListener) mq.addEventListener('change', function(ev){ setTheme(ev.matches?'dark':'light'); });
+  } else {
+    try{ window.parent.postMessage({type:'ecom-ready'}, '*'); }catch(e){}
+  }
+})();
+
+function txnStat(t,cls){ var el=document.getElementById('txnStatus'); if(el){ el.textContent=t||''; el.className=cls||''; } }
+function fileToB64(file){
+  return new Promise(function(res,rej){
+    var fr=new FileReader();
+    fr.onload=function(){ res(String(fr.result).split(',')[1]||''); };
+    fr.onerror=function(){ rej(new Error('파일을 읽지 못했어요.')); };
+    fr.readAsDataURL(file);
+  });
+}
+var TXN_LAST=null;
+function txnHandle(fileList){
+  var files=Array.prototype.slice.call(fileList||[]);
+  if(!files.length) return;
+  if(!SYNC){ txnStat('이 기능은 대시보드 서버에서 열었을 때만 동작해요.','warn'); return; }
+  txnStat('"'+files.map(function(f){return f.name;}).join(', ')+'" 읽는 중…');
+  Promise.all(files.map(function(f){ return fileToB64(f).then(function(b64){ return {name:f.name, data:b64}; }); }))
+    .then(function(payload){
+      TXN_LAST=payload;
+      return api('/api/ecom/txn/plan',{files:payload});
+    })
+    .then(function(pl){
+      txnStat(pl['대상월'].join(', ')+' 기준 '+pl.changes.length+'개 SKU를 갱신할 수 있어요. 확인 화면에서 봐주세요.',
+              pl.changes.length?'ok':'warn');
+      txnReview(pl);
+    })
+    .catch(function(e){ txnStat('읽지 못했어요: '+(e.message||''),'warn'); });
+}
+function txnReview(pl){
+  var rows=pl.changes.map(function(c){
+    return '<tr><td>'+c['플랫폼']+'</td><td>'+esc(c['SKU'])+(c['로켓배송']?' <span class="rkt">🚀로켓</span>':'')+'</td>'+
+      '<td>'+c['연월']+'</td><td class="num">'+nf(c['수량'])+'개</td>'+
+      '<td class="num">'+nf(c['공급가액'])+'원</td><td class="num">'+nf(c['개당'])+'원</td></tr>';
+  }).join('');
+  var miss=pl.unmatched.map(function(u){
+    return '<li>'+u['플랫폼']+' · '+esc(u['원본명'][0])+' — 수량 '+nf(u['수량'])+'개 (등록된 SKU 목록에 없어 건너뜁니다)</li>';
+  }).join('');
+  var missHtml = miss ? '<div class="txn-miss">⚠ 매칭 안 된 상품 '+pl.unmatched.length+'개<ul style="margin:6px 0 0 18px">'+miss+'</ul></div>' : '';
+  document.getElementById('txnModalBody').innerHTML =
+    '<h3>📦 거래내역 확인 — '+pl['대상월'].join(', ')+' 갱신</h3>'+
+    '<div class="txn-sub">이번에 새로 담긴 라인 <b>'+pl['새로_담김']+'</b>건'+
+      (pl['이미_있던_라인']?' · 이미 반영됐던 라인 '+pl['이미_있던_라인']+'건은 건너뜀':'')+
+      '. 등록하면 해당 SKU의 그 달 <b>수량·공급가</b>가 이 값으로 바뀌고(정정과 동일), 쿠팡은 <b>🚀로켓배송</b> 여부도 함께 표시됩니다.</div>'+
+    missHtml+
+    '<div class="txn-tbl-wrap"><table class="txn-tbl"><thead><tr>'+
+      '<th>플랫폼</th><th>SKU</th><th>연월</th><th>수량</th><th>공급가액</th><th>개당(VAT제외)</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="txn-actions"><button id="txnCancel">취소</button>'+
+      '<button class="go" id="txnGo">'+pl.changes.length+'개 반영</button></div>';
+  document.getElementById('txnOv').classList.add('on');
+  document.getElementById('txnCancel').onclick=function(){ document.getElementById('txnOv').classList.remove('on'); };
+  document.getElementById('txnGo').onclick=function(){
+    var b=document.getElementById('txnGo'); b.disabled=true; b.textContent='반영 중…';
+    pl.changes.forEach(function(c){
+      var p=c['플랫폼'], k=c['SKU'], mk=c['연월'];
+      if(P(p).skus.indexOf(k)<0) return;                 /* 그 플랫폼에 없는 SKU는 건너뜀 */
+      var S=ST(p); if(!S[k]) S[k]={};
+      var prevC=(S[k][mk]&&S[k][mk].c!=null)?S[k][mk].c:null;
+      S[k][mk]={q:c['수량'], a:c['공급가액'], c:prevC};
+      c['원가']=prevC;
+      STORE[p]=S;
+      try{ localStorage.setItem('perf_'+p,JSON.stringify(S)); }catch(e){}
+      pushEntry(p,k,mk,S[k][mk]);
+      if(p==='쿠팡' && c['로켓배송'] && !isRocket(k)) setRocket(k,true);
+    });
+    TREND={}; TREND_PIN=null;      /* 새 거래내역이 들어왔으니 추이도 다시 받는다 */
+    render();
+    api('/api/ecom/txn/apply', {
+      changes:pl.changes,
+      unmatched:pl.unmatched,
+      source_files:pl.source_files||[]
+    }, false).then(function(sync){
+      document.getElementById('txnOv').classList.remove('on');
+      if(sync.ok){
+        var n=(sync.counts&&sync.counts.ecommerce_sku_monthly)||0;
+        var miss=(sync.counts&&sync.counts.unmatched)||0;
+        txnStat(pl.changes.length+'개 SKU 화면 반영 · Supabase '+n+'건 저장'+
+          (miss?' · 미매칭 '+miss+'건은 확인목록에 보관':''),'ok');
+      } else {
+        txnStat(pl.changes.length+'개 SKU 화면 반영 · '+(sync.message||'Supabase 저장 건너뜀'),'warn');
+      }
+    }).catch(function(e){
+      document.getElementById('txnOv').classList.remove('on');
+      txnStat(pl.changes.length+'개 SKU 화면 반영 · Supabase 저장 실패: '+e.message,'warn');
+    });
+  };
+}
+(function initTxn(){
+  var drop=document.getElementById('txnDrop'); if(!drop) return;
+  var fi=document.getElementById('txnFile');
+  document.getElementById('txnPick').addEventListener('click', function(e){ e.stopPropagation(); fi.click(); });
+  drop.addEventListener('click', function(){ fi.click(); });
+  fi.addEventListener('change', function(){ txnHandle(fi.files); fi.value=''; });
+  ['dragenter','dragover'].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault();
+      if(ev==='dragleave' && drop.contains(e.relatedTarget)) return;
+      drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault(); drop.classList.remove('over');
+    if(e.dataTransfer && e.dataTransfer.files) txnHandle(e.dataTransfer.files);
+  });
+  document.getElementById('txnOv').addEventListener('click', function(e){
+    if(e.target.id==='txnOv') e.currentTarget.classList.remove('on');
+  });
+})();
+
+/* 일별 출고량 — SKU 카드에서 "📅 일별 보기"를 누르면 그 SKU의 날짜별 수량을 표로 보여준다 */
+function showDaily(plat,sku){
+  if(!SYNC){ return; }
+  api('/api/ecom/txn/daily',{plat:plat,sku:sku}).then(function(r){
+    var s=r.series||[];
+    var rows = s.length ? s.slice().reverse().map(function(d){
+      return '<tr><td>'+d.date+'</td><td class="num">'+nf(d.qty)+'개</td><td class="num">'+nf(d.supply)+'원</td></tr>';
+    }).join('') : '<tr><td colspan="3" style="color:#aaa;padding:10px">거래내역에서 아직 반영된 날짜가 없어요.</td></tr>';
+    var tot=s.reduce(function(a,d){return a+d.qty;},0);
+    document.getElementById('txnModalBody').innerHTML =
+      '<h3>📅 일별 출고량 — '+esc(sku)+'</h3>'+
+      '<div class="txn-sub">거래내역으로 반영된 날짜 기준 (누적 '+nf(tot)+'개). 위 <b>📦 거래내역</b> 드롭존으로 최신 파일을 넣으면 여기도 갱신됩니다.</div>'+
+      '<div class="txn-tbl-wrap"><table class="txn-tbl"><thead><tr><th>날짜</th><th>수량</th><th>공급가액</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>'+
+      '<div class="txn-actions"><button id="txnCancel">닫기</button></div>';
+    document.getElementById('txnOv').classList.add('on');
+    document.getElementById('txnCancel').onclick=function(){ document.getElementById('txnOv').classList.remove('on'); };
+  }).catch(function(e){ alert('불러오지 못했어요: '+e.message); });
+}
+
+if(SYNC){
+  var bar=document.querySelector('.bar');
+  if(bar){
+    var st=document.createElement('span');
+    st.id='syncstate'; st.className='syncstate';
+    st.textContent='시트 확인 중…';
+    bar.insertBefore(st, document.getElementById('expjson'));
+    var rf=document.createElement('button');
+    rf.className='ghost'; rf.textContent='🔄 새로고침';
+    rf.onclick=function(){ pull().then(function(ok){ if(ok) render(); }); };
+    bar.insertBefore(rf, document.getElementById('expjson'));
+    var up=document.createElement('button');
+    up.className='ghost'; up.textContent='⬆ 시트로 올리기';
+    up.title='이 브라우저에 있는 값을 시트로 한 번에 올립니다 (최초 이전용)';
+    up.onclick=function(){
+      if(!confirm('지금 이 브라우저에 있는 입력값·광고비를 구글시트로 올립니다.\n시트에 같은 달 값이 있으면 덮어씁니다. 계속할까요?')) return;
+      sst('시트로 올리는 중…','');
+      var d=dumpData(), misc={};
+      Object.keys(d.misc).forEach(function(k){ misc[k]=d.misc[k]; });
+      api('/api/ecom/push',{perf:d.perf, ad:JSON.parse(d.misc.ad_spend||'{}'), settings:misc})
+        .then(function(r){ sst('시트로 '+r.n+'건 올렸어요','ok');
+          if(r.url) window.open(r.url,'_blank');
+          return pull(); })
+        .then(function(){ render(); })
+        .catch(function(e){ sst('올리기 실패: '+e.message,'warn'); alert('올리지 못했어요: '+e.message); });
+    };
+    bar.insertBefore(up, document.getElementById('expjson'));
+    if(localStorage.getItem('backup_before_sync')){
+      var rb=document.createElement('button');
+      rb.className='ghost'; rb.textContent='↩ 연결 전으로';
+      rb.title='구글시트 연결 전 상태로 되돌립니다';
+      rb.onclick=restoreBackup;
+      bar.insertBefore(rb, document.getElementById('expjson'));
+    }
+  }
+  backupLocal();
+  pull().then(function(ok){ if(ok) render(); });
+  /* 다른 사람이 고친 값을 주기적으로 가져온다 */
+  setInterval(function(){
+    if(document.hidden||!SYNCED) return;
+    pull(true).then(function(ok){ if(ok) render(); });
+  }, 45000);
+}
+
+mountCustom();
+render();
+</script></body></html>

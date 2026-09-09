@@ -1,0 +1,176 @@
+{
+  "stage_template": [
+    "기획·제조사 컨택",
+    "단가·조건 협의",
+    "샘플·품질 확인",
+    "라벨 (초안→번역→확정)",
+    "부자재 (바코드·카톤)",
+    "발주 (PO)",
+    "생산·선적",
+    "입항·통관·입고"
+  ],
+  "projects": [
+    {
+      "id": "avoe250",
+      "name": "포스티보나 아보카도오일 250ml",
+      "maker": "Zenat",
+      "contact": "",
+      "target": "2026-11-23",
+      "status": "진행중",
+      "memo": "한국어 라벨 확정본 수령(비타민E 제외). 카톤·바코드 확정 단계.",
+      "links": [
+        {
+          "label": "구글드라이브 프로젝트 폴더",
+          "url": "https://drive.google.com/drive/folders/1Ft5Q-1GFkku_ABrpoVa7EsLUH9qcBqcy"
+        }
+      ],
+      "stages": [
+        {
+          "name": "기획·제조사 컨택",
+          "start": "2026-06-26",
+          "end": "2026-06-26",
+          "done": true
+        },
+        {
+          "name": "단가·조건 협의",
+          "start": "2026-06-26",
+          "end": "2026-07-03",
+          "done": true
+        },
+        {
+          "name": "샘플·품질 확인",
+          "start": "",
+          "end": "",
+          "done": false
+        },
+        {
+          "name": "라벨 (초안→번역→확정)",
+          "start": "2026-06-26",
+          "end": "2026-07-24",
+          "done": true
+        },
+        {
+          "name": "부자재 (바코드·카톤)",
+          "start": "2026-07-06",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "발주 (PO)",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "생산·선적",
+          "start": "",
+          "end": "",
+          "done": false
+        },
+        {
+          "name": "입항·통관·입고",
+          "start": "",
+          "end": "2026-09-30",
+          "done": false
+        }
+      ],
+      "logs": [
+        {
+          "date": "2026-07-27",
+          "text": "최종단가 3.08유로, 그린씰로 확정"
+        },
+        {
+          "date": "2026-07-24",
+          "text": "한국어 라벨 확정 — 비타민E 제외 버전으로 결정."
+        },
+        {
+          "date": "2026-07-06",
+          "text": "바코드(8445706000770) 확인."
+        },
+        {
+          "date": "2026-07-03",
+          "text": "단가 체크리스트 정리 완료."
+        },
+        {
+          "date": "2026-06-26",
+          "text": "제조사 미팅 진행 (Meeting Agenda 작성). 라벨 초안 수령."
+        }
+      ]
+    },
+    {
+      "id": "kukugirl-mint",
+      "name": "커커걸 커디민트사탕",
+      "maker": "커커걸",
+      "contact": "Aura",
+      "target": "2026-08-31",
+      "status": "진행중",
+      "memo": "8월말 입고 목표. 한중FTA 적용 시 관세 0%.",
+      "links": [
+        {
+          "label": "노션 프로젝트 페이지",
+          "url": "https://app.notion.com/p/3985a5dc9a4f80a0ac3bf9c0b8eb4809"
+        }
+      ],
+      "stages": [
+        {
+          "name": "기획·제조사 컨택",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "단가·조건 협의",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "샘플·품질 확인",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "라벨 (초안→번역→확정)",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "부자재 (바코드·카톤)",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "발주 (PO)",
+          "start": "",
+          "end": "",
+          "done": true
+        },
+        {
+          "name": "생산·선적",
+          "start": "",
+          "end": "",
+          "done": false
+        },
+        {
+          "name": "입항·통관·입고",
+          "start": "",
+          "end": "2026-08-31",
+          "done": false
+        }
+      ],
+      "logs": [
+        {
+          "date": "2026-07-27",
+          "text": "한글표시사항 관련 식약처 신문고 답변 대기중"
+        },
+        {
+          "date": "2026-07-13",
+          "text": "노션에 프로젝트 페이지 생성. 제조사 담당자 Aura, 한중FTA 관세 0% 확인."
+        }
+      ]
+    }
+  ]
+}

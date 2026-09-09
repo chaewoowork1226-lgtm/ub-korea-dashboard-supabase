@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+forecast_export.xlsx
+forecast_dashboard.html
+수요예측_대시보드.html
+.DS_Store
+# API 키 원문(UNI-PASS 29개 · Anthropic · Deepseek)이 들어 있다
+customs_config.json
+
+# ERP 재고표를 올릴 때마다 자동으로 쌓이는 백업 (9MB). 되돌릴 때만 쓰는 사본이라 뺀다.
+data/_backup/
